@@ -16,12 +16,7 @@ if (!isset($_SESSION['username'])) {
 </head>
 
 <?php Include ('header.php');?>
-<?php if (isset($_SESSION['message'])): ?>
-            <div class="p-4 mb-4 text-white rounded <?= $_SESSION['message_type'] === 'success' ? 'bg-green-500' : 'bg-red-500' ?>">
-                <?= $_SESSION['message']; ?>
-                <?php unset($_SESSION['message']); ?>
-            </div>
-        <?php endif; ?>
+
    
 </body>
 </html>
