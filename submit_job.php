@@ -1,67 +1,96 @@
 <?php
 session_start();
-
-// Include the database connection file
 include('db_conn.php');
 
-// Check if the form was submitted
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Capture the form data
-    $year = $_POST['Year'];
-    $month = $_POST['Month'];
-    $dtJobNumber = $_POST['DTJobNumber'];
-    $hoJobNumber = $_POST['HOJobNumber'];
-    $client = $_POST['Client'];
-    $dateOpened = $_POST['DateOpened'];
-    $descriptionOfWork = $_POST['Description_Of_Work'];
-    $targetDate = $_POST['TargetDate'];
-    $completionDate = $_POST['CompletionDate'] ?? null; // Use null if not provided
-    $deliveredDate = $_POST['DeliveredDate'] ?? null; // Use null if not provided
-    $fileClosed = $_POST['FileClosed'];
-    $labourHours = $_POST['LabourHours'] ?? null; // Use null if not provided
-    $materialCost = $_POST['MaterialCost'] ?? null; // Use null if not provided
-    $typeOfWork = $_POST['TypeOfWork'] ?? null; // Use null if not provided
-    $remarks = $_POST['Remarks'] ?? null; // Use null if not provided
+$page = $_POST['page'] ?? 1;
+$perPage = 10; // Number of results per page
+$start = ($page - 1) * $perPage;
 
-    try {
-        // Prepare the SQL query
-        $sql = "INSERT INTO jobdetails (Year, Month, DTJobNumber, HOJobNumber, Client, DateOpened, Description_Of_Work, TargetDate, CompletionDate, DeliveredDate, FileClosed, LabourHours, MaterialCost, TypeOfWork, Remarks)
-                VALUES (:year, :month, :dtJobNumber, :hoJobNumber, :client, :dateOpened, :descriptionOfWork, :targetDate, :completionDate, :deliveredDate, :fileClosed, :labourHours, :materialCost, :typeOfWork, :remarks)";
+$client = $_POST['client'] ?? '';
+$jobNumber = $_POST['jobNumber'] ?? '';
+$year = $_POST['year'] ?? '';
+$fromDate = $_POST['fromDate'] ?? '';
+$toDate = $_POST['toDate'] ?? '';
 
-        // Prepare the statement
-        $stmt = $pdo->prepare($sql);
+$whereClauses = [];
+$params = [];
 
-        // Bind the parameters
-        $stmt->bindParam(':year', $year);
-        $stmt->bindParam(':month', $month);
-        $stmt->bindParam(':dtJobNumber', $dtJobNumber);
-        $stmt->bindParam(':hoJobNumber', $hoJobNumber);
-        $stmt->bindParam(':client', $client);
-        $stmt->bindParam(':dateOpened', $dateOpened);
-        $stmt->bindParam(':descriptionOfWork', $descriptionOfWork);
-        $stmt->bindParam(':targetDate', $targetDate);
-        $stmt->bindParam(':completionDate', $completionDate);
-        $stmt->bindParam(':deliveredDate', $deliveredDate);
-        $stmt->bindParam(':fileClosed', $fileClosed);
-        $stmt->bindParam(':labourHours', $labourHours);
-        $stmt->bindParam(':materialCost', $materialCost);
-        $stmt->bindParam(':typeOfWork', $typeOfWork);
-        $stmt->bindParam(':remarks', $remarks);
-
-        // Execute the statement
-        $stmt->execute();
-
-        // Success message
-        $_SESSION['message'] = "Job details added successfully!";
-        $_SESSION['message_type'] = 'success';
-    } catch (PDOException $e) {
-        // Error handling
-        $_SESSION['message'] = "Error: " . $e->getMessage();
-        $_SESSION['message_type'] = 'error';
-    }
-
-    // Redirect back to the form or show a success message
-    header('Location: index.php');
-    exit();
+if ($client) {
+    $whereClauses[] = "Client LIKE :client";
+    $params[':client'] = "%$client%";
 }
+if ($jobNumber) {
+    $whereClauses[] = "DTJobNumber LIKE :jobNumber";
+    $params[':jobNumber'] = "%$jobNumber%";
+}
+if ($year) {
+    $whereClauses[] = "Year = :year";
+    $params[':year'] = $year;
+}
+if ($fromDate && $toDate) {
+    $whereClauses[] = "DateOpened BETWEEN :fromDate AND :toDate";
+    $params[':fromDate'] = $fromDate;
+    $params[':toDate'] = $toDate;
+} elseif ($fromDate) {
+    $whereClauses[] = "DateOpened >= :fromDate";
+    $params[':fromDate'] = $fromDate;
+} elseif ($toDate) {
+    $whereClauses[] = "DateOpened <= :toDate";
+    $params[':toDate'] = $toDate;
+}
+
+$whereSql = '';
+if (count($whereClauses) > 0) {
+    $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
+}
+
+$sql = "SELECT * FROM jayantha_1500_table $whereSql LIMIT :start, :perPage";
+$stmt = $pdo->prepare($sql);
+$params[':start'] = $start;
+$params[':perPage'] = $perPage;
+
+$stmt->execute($params);
+
+$jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get total results count for pagination
+$sqlCount = "SELECT COUNT(*) FROM jayantha_1500_table $whereSql";
+$stmtCount = $pdo->prepare($sqlCount);
+$stmtCount->execute($params);
+$totalResults = $stmtCount->fetchColumn();
+$totalPages = ceil($totalResults / $perPage);
+
+// Prepare table data
+$tableData = '';
+foreach ($jobs as $job) {
+    $tableData .= "<tr>
+        <td>{$job['OrderID']}</td>
+        <td>{$job['Year']}</td>
+        <td>{$job['Month']}</td>
+        <td>{$job['DTJobNumber']}</td>
+        <td>{$job['HOJobNumber']}</td>
+        <td>{$job['Client']}</td>
+        <td>{$job['DateOpened']}</td>
+        <td>{$job['DescriptionOfWork']}</td>
+        <td>{$job['TargetDate']}</td>
+        <td>{$job['CompletionDate']}</td>
+        <td>{$job['DeliveredDate']}</td>
+        <td>{$job['FileClosed']}</td>
+        <td>{$job['LabourHours']}</td>
+        <td>{$job['MaterialCost']}</td>
+        <td>{$job['TypeOfWork']}</td>
+        <td>{$job['Remarks']}</td>
+    </tr>";
+}
+
+// Prepare pagination links
+$pagination = '';
+for ($i = 1; $i <= $totalPages; $i++) {
+    $pagination .= "<a href='#' class='pagination-link" . ($i == $page ? " active" : "") . "' data-page='$i'>$i</a>";
+}
+
+echo json_encode([
+    'tableData' => $tableData,
+    'pagination' => $pagination
+]);
 ?>

@@ -4,12 +4,6 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit();
 }
-
-include('db_conn.php');
-$sql = "SELECT * FROM jobdetails";
-$stmt = $pdo->prepare($sql);
-$stmt->execute();
-$jobs = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -18,15 +12,59 @@ $jobs = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="css/jquery-3.6.0.min.js"></script>
+    <script src="3.4.16"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .pagination-link {
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .pagination-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .pagination-link.active {
+            background-color: #007bff;
+            color: white;
+            pointer-events: none;
+        }
+    </style>
 </head>
-<?php Include('header.php');?>
+<body>
+<?php include('header.php'); ?>
 
-<!-- View Job Details Table with Horizontal Scrolling -->
 <div class="container mx-auto mt-8 p-6 bg-white rounded-lg shadow-xl">
     <h2 class="text-3xl font-bold text-gray-800 mb-6">Job Details</h2>
 
-    <!-- Table wrapper with horizontal scroll -->
+    <!-- Search Bar -->
+    <div class="mb-6">
+        <input type="text" id="clientSearch" placeholder="Search by Client" class="p-2 border rounded">
+        <input type="text" id="jobNumberSearch" placeholder="Search by DT Job Number" class="p-2 border rounded">
+        <input type="text" id="yearSearch" placeholder="Search by Year" class="p-2 border rounded">
+        <input type="date" id="fromDate" placeholder="From Date" class="p-2 border rounded">
+        <input type="date" id="toDate" placeholder="To Date" class="p-2 border rounded">
+    </div>
+
+    <!-- Table wrapper -->
     <div class="overflow-x-auto">
         <table class="min-w-full table-auto border-collapse bg-gray-100 rounded-lg overflow-hidden">
             <thead class="bg-gray-200 text-gray-800">
@@ -47,38 +85,63 @@ $jobs = $stmt->fetchAll();
                     <th class="px-6 py-3 text-left">Material Cost</th>
                     <th class="px-6 py-3 text-left">Type of Work</th>
                     <th class="px-6 py-3 text-left">Remarks</th>
-                    <th class="px-6 py-3 text-left">Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php foreach ($jobs as $index => $job): ?>
-                    <tr class="border-b hover:bg-gray-50 <?php echo $index % 2 == 0 ? 'bg-white' : 'bg-gray-100'; ?>">
-                        <td class="px-6 py-4"><?php echo $job['Order_ID']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['Year']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['Month']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['DTJobNumber']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['HOJobNumber']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['Client']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['DateOpened']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['Description_Of_Work']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['TargetDate']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['CompletionDate']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['DeliveredDate']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['FileClosed'] ? 'Yes' : 'No'; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['LabourHours']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['MaterialCost']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['TypeOfWork']; ?></td>
-                        <td class="px-6 py-4"><?php echo $job['Remarks']; ?></td>
-                        <td class="px-6 py-4 space-x-2">
-                            <a href="edit_job.php?id=<?php echo $job['Order_ID']; ?>" class="text-blue-600 hover:text-blue-800 font-semibold">Edit</a>
-                            <a href="delete_job.php?id=<?php echo $job['Order_ID']; ?>" class="text-red-600 hover:text-red-800 font-semibold">Delete</a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
+            <tbody id="jobTable">
+                <!-- Data will be dynamically loaded via AJAX -->
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="flex justify-center mt-4">
+        <!-- Pagination links will be dynamically loaded -->
+    </div>
 </div>
 
+<script>
+$(document).ready(function() {
+    function loadJobs(page = 1) {
+        var client = $('#clientSearch').val();
+        var jobNumber = $('#jobNumberSearch').val();
+        var year = $('#yearSearch').val();
+        var fromDate = $('#fromDate').val();
+        var toDate = $('#toDate').val();
+
+        $.ajax({
+            url: 'search.php',
+            type: 'POST',
+            data: {
+                client: client,
+                jobNumber: jobNumber,
+                year: year,
+                fromDate: fromDate,
+                toDate: toDate,
+                page: page
+            },
+            success: function(response) {
+                $('#jobTable').html(response.tableData);
+                $('#pagination').html(response.pagination);
+            },
+            dataType: 'json'
+        });
+    }
+
+    // Load jobs on page load
+    loadJobs();
+
+    // Trigger search on input change or date selection
+    $('#clientSearch, #jobNumberSearch, #yearSearch, #fromDate, #toDate').on('input change', function() {
+        loadJobs();
+    });
+
+    // Handle pagination click
+    $(document).on('click', '.pagination-link', function(e) {
+        e.preventDefault();
+        var page = $(this).data('page');
+        loadJobs(page);
+    });
+});
+</script>
 </body>
 </html>

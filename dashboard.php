@@ -11,14 +11,19 @@ if (!isset($_SESSION['username'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Details</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="3.4.16"></script>
 </head>
-<?php Include ('header.php');?>
+<?php include('header.php'); ?>
+<body>
     <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow-lg">
         <h2 class="text-2xl font-bold mb-4">Add Job Details</h2>
 
         <!-- Success or Error Message -->
-       
+        <?php if (isset($_SESSION['message'])): ?>
+            <div class="p-4 mb-4 <?php echo ($_SESSION['message_type'] == 'success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+                <?php echo $_SESSION['message']; unset($_SESSION['message'], $_SESSION['message_type']); ?>
+            </div>
+        <?php endif; ?>
 
         <form action="submit_job.php" method="POST">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -48,8 +53,8 @@ if (!isset($_SESSION['username'])) {
                 <input type="date" name="DateOpened" id="DateOpened" class="mt-1 p-2 w-full border rounded-md" required>
             </div>
             <div class="mt-4">
-                <label for="Description_Of_Work" class="block text-sm font-semibold text-gray-700">Description of Work</label>
-                <textarea name="Description_Of_Work" id="Description_Of_Work" rows="4" class="mt-1 p-2 w-full border rounded-md" required></textarea>
+                <label for="DescriptionOfWork" class="block text-sm font-semibold text-gray-700">Description of Work</label>
+                <textarea name="DescriptionOfWork" id="DescriptionOfWork" rows="4" class="mt-1 p-2 w-full border rounded-md" required></textarea>
             </div>
             <div class="mt-4">
                 <label for="TargetDate" class="block text-sm font-semibold text-gray-700">Target Date</label>
@@ -91,43 +96,5 @@ if (!isset($_SESSION['username'])) {
             </div>
         </form>
     </div>
-</body>
-</html>
-
-
-
-    <script>
-        $(document).ready(function() {
-            $('#jobForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent the default form submission
-
-                var formData = $(this).serialize(); // Get the form data
-
-                $.ajax({
-                    url: 'submit_job.php',  // The PHP file that will process the form
-                    type: 'POST',
-                    data: formData,
-                    success: function(response) {
-                        // Parse the response
-                        var data = JSON.parse(response);
-                        
-                        // Show success or error message
-                        $('#message').removeClass('hidden');
-                        if (data.success) {
-                            $('#message').addClass('bg-green-500').text(data.message);
-                        } else {
-                            $('#message').addClass('bg-red-500').text(data.message);
-                        }
-
-                        // Optionally clear the form
-                        $('#jobForm')[0].reset();
-                    },
-                    error: function() {
-                        $('#message').removeClass('hidden').addClass('bg-red-500').text('An error occurred. Please try again later.');
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>
