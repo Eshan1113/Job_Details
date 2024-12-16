@@ -2,95 +2,95 @@
 session_start();
 include('db_conn.php');
 
-$page = $_POST['page'] ?? 1;
-$perPage = 10; // Number of results per page
-$start = ($page - 1) * $perPage;
+// Retrieve and sanitize form inputs
+$year = $_POST['Year'] ?? '';
+$month = $_POST['Month'] ?? '';
+$dtJobNumber = $_POST['DTJobNumber'] ?? '';
+$hoJobNumber = $_POST['HOJobNumber'] ?? '';
+$client = $_POST['Client'] ?? '';
+$dateOpened = $_POST['DateOpened'] ?? '';
+$descriptionOfWork = $_POST['DescriptionOfWork'] ?? '';
+$TARGET_DATE = $_POST['TARGET_DATE'] ?? '';
+$completionDate = $_POST['CompletionDate'] ?? '';
+$deliveredDate = $_POST['DeliveredDate'] ?? '';
+$fileClosed = $_POST['FileClosed'] ?? '0';
+$labourHours = $_POST['LabourHours'] ?? '0.00';
+$materialCost = $_POST['MaterialCost'] ?? '0.00';
+$typeOfWork = $_POST['TypeOfWork'] ?? '';
+$remarks = $_POST['Remarks'] ?? '';
 
-$client = $_POST['client'] ?? '';
-$jobNumber = $_POST['jobNumber'] ?? '';
-$year = $_POST['year'] ?? '';
-$fromDate = $_POST['fromDate'] ?? '';
-$toDate = $_POST['toDate'] ?? '';
-
-$whereClauses = [];
-$params = [];
-
-if ($client) {
-    $whereClauses[] = "Client LIKE :client";
-    $params[':client'] = "%$client%";
-}
-if ($jobNumber) {
-    $whereClauses[] = "DTJobNumber LIKE :jobNumber";
-    $params[':jobNumber'] = "%$jobNumber%";
-}
-if ($year) {
-    $whereClauses[] = "Year = :year";
-    $params[':year'] = $year;
-}
-if ($fromDate && $toDate) {
-    $whereClauses[] = "DateOpened BETWEEN :fromDate AND :toDate";
-    $params[':fromDate'] = $fromDate;
-    $params[':toDate'] = $toDate;
-} elseif ($fromDate) {
-    $whereClauses[] = "DateOpened >= :fromDate";
-    $params[':fromDate'] = $fromDate;
-} elseif ($toDate) {
-    $whereClauses[] = "DateOpened <= :toDate";
-    $params[':toDate'] = $toDate;
+// Basic validation (you can expand this as needed)
+if (empty($year) || empty($month) || empty($dtJobNumber) || empty($client) || empty($dateOpened) || empty($descriptionOfWork) || empty($TARGET_DATE) || empty($TARGET_DATE)) {
+    $_SESSION['message'] = 'Please fill in all required fields.';
+    $_SESSION['message_type'] = 'error';
+    header("Location: dashboard.php");
+    exit();
 }
 
-$whereSql = '';
-if (count($whereClauses) > 0) {
-    $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
+try {
+    // Insert the job details into the database
+    $stmt = $pdo->prepare("
+        INSERT INTO jayantha_1500_table (
+            Year, 
+            Month, 
+            DTJobNumber, 
+            HOJobNumber, 
+            Client, 
+            DateOpened, 
+            DescriptionOfWork, 
+            TARGET_DATE, 
+            CompletionDate, 
+            DeliveredDate, 
+            FileClosed, 
+            LabourHours, 
+            MaterialCost, 
+            TypeOfWork, 
+            Remarks
+        ) VALUES (
+            :year, 
+            :month, 
+            :dtJobNumber, 
+            :hoJobNumber, 
+            :client, 
+            :dateOpened, 
+            :descriptionOfWork, 
+            :TARGET_DATE, 
+            :completionDate, 
+            :deliveredDate, 
+            :fileClosed, 
+            :labourHours, 
+            :materialCost, 
+            :typeOfWork, 
+            :remarks
+        )
+    ");
+
+    $stmt->execute([
+        ':year' => $year,
+        ':month' => $month,
+        ':dtJobNumber' => $dtJobNumber,
+        ':hoJobNumber' => $hoJobNumber,
+        ':client' => $client,
+        ':dateOpened' => $dateOpened,
+        ':descriptionOfWork' => $descriptionOfWork,
+        ':TARGET_DATE' => $TARGET_DATE,
+        ':completionDate' => $completionDate,
+        ':deliveredDate' => $deliveredDate,
+        ':fileClosed' => $fileClosed,
+        ':labourHours' => $labourHours,
+        ':materialCost' => $materialCost,
+        ':typeOfWork' => $typeOfWork,
+        ':remarks' => $remarks
+    ]);
+
+    $_SESSION['message'] = 'Job details added successfully!';
+    $_SESSION['message_type'] = 'success';
+} catch (PDOException $e) {
+    // Handle insertion errors
+    $_SESSION['message'] = 'Error adding job details: ' . $e->getMessage();
+    $_SESSION['message_type'] = 'error';
 }
 
-$sql = "SELECT * FROM jayantha_1500_table $whereSql LIMIT :start, :perPage";
-$stmt = $pdo->prepare($sql);
-$params[':start'] = $start;
-$params[':perPage'] = $perPage;
-
-$stmt->execute($params);
-
-$jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Get total results count for pagination
-$sqlCount = "SELECT COUNT(*) FROM jayantha_1500_table $whereSql";
-$stmtCount = $pdo->prepare($sqlCount);
-$stmtCount->execute($params);
-$totalResults = $stmtCount->fetchColumn();
-$totalPages = ceil($totalResults / $perPage);
-
-// Prepare table data
-$tableData = '';
-foreach ($jobs as $job) {
-    $tableData .= "<tr>
-        <td>{$job['OrderID']}</td>
-        <td>{$job['Year']}</td>
-        <td>{$job['Month']}</td>
-        <td>{$job['DTJobNumber']}</td>
-        <td>{$job['HOJobNumber']}</td>
-        <td>{$job['Client']}</td>
-        <td>{$job['DateOpened']}</td>
-        <td>{$job['DescriptionOfWork']}</td>
-        <td>{$job['TargetDate']}</td>
-        <td>{$job['CompletionDate']}</td>
-        <td>{$job['DeliveredDate']}</td>
-        <td>{$job['FileClosed']}</td>
-        <td>{$job['LabourHours']}</td>
-        <td>{$job['MaterialCost']}</td>
-        <td>{$job['TypeOfWork']}</td>
-        <td>{$job['Remarks']}</td>
-    </tr>";
-}
-
-// Prepare pagination links
-$pagination = '';
-for ($i = 1; $i <= $totalPages; $i++) {
-    $pagination .= "<a href='#' class='pagination-link" . ($i == $page ? " active" : "") . "' data-page='$i'>$i</a>";
-}
-
-echo json_encode([
-    'tableData' => $tableData,
-    'pagination' => $pagination
-]);
+header("Location: dashboard.php");
+exit();
 ?>

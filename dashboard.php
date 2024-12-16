@@ -1,8 +1,29 @@
 <?php 
 session_start();
+
+// Enable error reporting for debugging (remove in production)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Include the database connection
+include('db_conn.php');
+
+// Check if the user is logged in
 if (!isset($_SESSION['username'])) {
     header("Location: index.php");
     exit();
+}
+
+// Fetch clients from the client_list table
+try {
+    $stmt = $pdo->prepare("SELECT client FROM client_list ORDER BY client ASC");
+    $stmt->execute();
+    $clients = $stmt->fetchAll();
+} catch (PDOException $e) {
+    // Handle query errors
+    $clients = [];
+    $client_error = 'Error fetching clients: ' . $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -11,7 +32,9 @@ if (!isset($_SESSION['username'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Details</title>
-    <script src="3.4.16"></script>
+    <!-- Include necessary scripts and styles -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <?php include('header.php'); ?>
 <body>
@@ -21,7 +44,17 @@ if (!isset($_SESSION['username'])) {
         <!-- Success or Error Message -->
         <?php if (isset($_SESSION['message'])): ?>
             <div class="p-4 mb-4 <?php echo ($_SESSION['message_type'] == 'success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                <?php echo $_SESSION['message']; unset($_SESSION['message'], $_SESSION['message_type']); ?>
+                <?php 
+                    echo htmlspecialchars($_SESSION['message']); 
+                    unset($_SESSION['message'], $_SESSION['message_type']); 
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Display client fetch error if any -->
+        <?php if (isset($client_error)): ?>
+            <div class="p-4 mb-4 bg-red-100 text-red-800">
+                <?php echo htmlspecialchars($client_error); ?>
             </div>
         <?php endif; ?>
 
@@ -33,9 +66,24 @@ if (!isset($_SESSION['username'])) {
                 </div>
                 <div>
                     <label for="Month" class="block text-sm font-semibold text-gray-700">Month</label>
-                    <input type="text" name="Month" id="Month" class="mt-1 p-2 w-full border rounded-md" required>
+                    <select name="Month" id="Month" class="mt-1 p-2 w-full border rounded-md" required>
+                        <option value="" disabled selected>Select a month</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
                 </div>
             </div>
+
             <div class="mt-4">
                 <label for="DTJobNumber" class="block text-sm font-semibold text-gray-700">DT Job Number</label>
                 <input type="text" name="DTJobNumber" id="DTJobNumber" class="mt-1 p-2 w-full border rounded-md" required>
@@ -46,7 +94,20 @@ if (!isset($_SESSION['username'])) {
             </div>
             <div class="mt-4">
                 <label for="Client" class="block text-sm font-semibold text-gray-700">Client</label>
-                <input type="text" name="Client" id="Client" class="mt-1 p-2 w-full border rounded-md" required>
+                <select name="Client" id="Client" class="mt-1 p-2 w-full border rounded-md" required>
+                    <option value="" disabled selected>Select a client</option>
+                    <?php
+                        if (!empty($clients)) {
+                            foreach ($clients as $client) {
+                                // Adjust 'client_name' if your column is named differently
+                                $clientName = htmlspecialchars($client['client']);
+                                echo "<option value=\"{$clientName}\">{$clientName}</option>";
+                            }
+                        } else {
+                            echo '<option value="" disabled>No clients available</option>';
+                        }
+                    ?>
+                </select>
             </div>
             <div class="mt-4">
                 <label for="DateOpened" class="block text-sm font-semibold text-gray-700">Date Opened</label>
@@ -58,7 +119,7 @@ if (!isset($_SESSION['username'])) {
             </div>
             <div class="mt-4">
                 <label for="TargetDate" class="block text-sm font-semibold text-gray-700">Target Date</label>
-                <input type="date" name="TargetDate" id="TargetDate" class="mt-1 p-2 w-full border rounded-md" required>
+                <input type="date" name="TARGET_DATE" id="TARGET_DATE" class="mt-1 p-2 w-full border rounded-md" required>
             </div>
             <div class="mt-4">
                 <label for="CompletionDate" class="block text-sm font-semibold text-gray-700">Completion Date</label>

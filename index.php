@@ -6,7 +6,7 @@ require_once 'db_conn.php';  // Path to your db_conn.php file
 
 // Check if the user is already logged in, if so, redirect them
 if (isset($_SESSION['user_id'])) {
-    header('Location: dasbor1.php');  // Redirect to your dashboard or home page
+    header('Location: view_jobs.php');  // Redirect to your dashboard or home page
     exit;
 }
 
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['message_type'] = 'success';
 
         // Redirect to a dashboard or home page
-        header('Location: dasbor1.php');  // Replace with your page
+        header('Location: view_jobs.php');  // Replace with your page
         exit;
     } else {
         // Invalid username or password
