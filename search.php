@@ -88,7 +88,8 @@ $offset = ($page - 1) * $records_per_page;
 
 // Fetch the relevant records
 try {
-    $dataQuery = "SELECT * FROM jayantha_1500_table $whereClause ORDER BY Year ASC, Month ASC LIMIT :limit OFFSET :offset";
+    // Modified ORDER BY to sort months numerically
+    $dataQuery = "SELECT * FROM jayantha_1500_table $whereClause ORDER BY Year ASC, MONTH(STR_TO_DATE(Month, '%M')) ASC LIMIT :limit OFFSET :offset";
     $dataStmt = $pdo->prepare($dataQuery);
 
     // Bind parameters
@@ -106,14 +107,21 @@ try {
     exit();
 }
 
-// Group the data by Year
+// Group the data by Year and then by Month
 $groupedData = [];
 foreach ($jobs as $job) {
     $jobYear = $job['Year'];
+    $jobMonth = $job['Month'];
+
     if (!isset($groupedData[$jobYear])) {
         $groupedData[$jobYear] = [];
     }
-    $groupedData[$jobYear][] = $job;
+
+    if (!isset($groupedData[$jobYear][$jobMonth])) {
+        $groupedData[$jobYear][$jobMonth] = [];
+    }
+
+    $groupedData[$jobYear][$jobMonth][] = $job;
 }
 
 // Generate "Previous" and "Next" buttons

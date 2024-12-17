@@ -56,14 +56,19 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- (Head Content remains the same) -->
+    <!-- Head Content -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
+    <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         /* Existing CSS styles */
@@ -123,6 +128,8 @@ try {
 <div class="container mx-auto mt-8 p-6 bg-white rounded-lg shadow-xl">
     <h2 class="text-3xl font-bold text-gray-800 mb-6">Job Details</h2>
 
+  
+
     <!-- Display Success or Error Message -->
     <?php if (isset($_SESSION['message'])): ?>
         <div class="p-4 mb-4 <?php echo ($_SESSION['message_type'] == 'success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
@@ -132,16 +139,19 @@ try {
             ?>
         </div>
     <?php endif; ?>
-
+    <div class="flex justify-end mb-6">
+    <button id="exportButton" class="export-button">Export to Excel</button>
+</div>
     <!-- Main Search Bar -->
     <div class="mb-6 flex flex-wrap gap-4">
         <input type="text" id="mainSearch" placeholder="Search..." class="p-2 border rounded w-full md:w-1/2">
     </div>
 
-    <!-- Search Filters and Export Button -->
+    <!-- Search Filters -->
     <div class="mb-6 flex flex-wrap gap-4">
         <!-- Client Dropdown -->
         <select id="clientSearch" class="p-2 border rounded select2">
+            <option></option> <!-- Empty option for placeholder -->
             <option value="">All Clients</option>
             <?php foreach ($clients as $client): ?>
                 <option value="<?php echo htmlspecialchars($client); ?>"><?php echo htmlspecialchars($client); ?></option>
@@ -150,6 +160,7 @@ try {
 
         <!-- DT Job Number Dropdown -->
         <select id="jobNumberSearch" class="p-2 border rounded select2">
+            <option></option> <!-- Empty option for placeholder -->
             <option value="">All DT Job Numbers</option>
             <?php foreach ($dtJobNumbers as $jobNumber): ?>
                 <option value="<?php echo htmlspecialchars($jobNumber); ?>"><?php echo htmlspecialchars($jobNumber); ?></option>
@@ -158,6 +169,7 @@ try {
 
         <!-- Year Dropdown -->
         <select id="yearSearch" class="p-2 border rounded select2">
+            <option></option> <!-- Empty option for placeholder -->
             <option value="">All Years</option>
             <?php foreach ($years as $year): ?>
                 <option value="<?php echo htmlspecialchars($year); ?>"><?php echo htmlspecialchars($year); ?></option>
@@ -166,6 +178,7 @@ try {
 
         <!-- Type of Work Dropdown -->
         <select id="typeOfWorkSearch" class="p-2 border rounded select2">
+            <option></option> <!-- Empty option for placeholder -->
             <option value="">All Types of Work</option>
             <?php foreach ($typesOfWork as $type): ?>
                 <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
@@ -181,9 +194,6 @@ try {
             <label for="toDate" class="text-sm font-semibold text-gray-700">To:</label>
             <input type="date" id="toDate" placeholder="To Date" class="p-2 border rounded">
         </div>
-
-        <!-- Export Button -->
-        <button id="exportButton" class="export-button">Export to Excel</button>
     </div>
 
     <!-- Table wrapper -->
@@ -222,10 +232,29 @@ try {
 
 <script>
 $(document).ready(function() {
-    // Initialize Select2 for better dropdowns
-    $('.select2').select2({
-        placeholder: "Select an option",
-        allowClear: true
+    // Initialize Select2 for each dropdown with specific placeholders
+    $('#clientSearch').select2({
+        placeholder: "Select a Client",
+        allowClear: true,
+        width: 'resolve' // Ensure the width matches the original element
+    });
+
+    $('#jobNumberSearch').select2({
+        placeholder: "Select a DT Job Number",
+        allowClear: true,
+        width: 'resolve'
+    });
+
+    $('#yearSearch').select2({
+        placeholder: "Select a Year",
+        allowClear: true,
+        width: 'resolve'
+    });
+
+    $('#typeOfWorkSearch').select2({
+        placeholder: "Select a Type of Work",
+        allowClear: true,
+        width: 'resolve'
     });
 
     function loadJobs(page = 1) {
@@ -254,26 +283,29 @@ $(document).ready(function() {
                 // Parse the JSON response
                 if(response.success){
                     var tableHtml = '';
-                    $.each(response.groupedData, function(yearKey, jobs) {
+                    $.each(response.groupedData, function(yearKey, months) {
                         tableHtml += '<tr class="group-header"><td colspan="15">Year: ' + escapeHtml(yearKey) + '</td></tr>';
-                        $.each(jobs, function(index, job) {
-                            tableHtml += '<tr>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Year) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Month) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DTJobNumber) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.HOJobNumber ? escapeHtml(job.HOJobNumber) : 'N/A') + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Client) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DateOpened) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DescriptionOfWork) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.TARGET_DATE) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.CompletionDate ? escapeHtml(job.CompletionDate) : 'N/A') + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.DeliveredDate ? escapeHtml(job.DeliveredDate) : 'N/A') + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.FileClosed == 1 ? 'Yes' : 'No') + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.LabourHours) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.MaterialCost) + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.TypeOfWork ? escapeHtml(job.TypeOfWork) : 'N/A') + '</td>';
-                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.Remarks ? escapeHtml(job.Remarks) : 'N/A') + '</td>';
-                            tableHtml += '</tr>';
+                        $.each(months, function(monthKey, jobs) {
+                            tableHtml += '<tr class="group-header"><td colspan="15">Month: ' + escapeHtml(monthKey) + '</td></tr>';
+                            $.each(jobs, function(index, job) {
+                                tableHtml += '<tr>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Year) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Month) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DTJobNumber) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.HOJobNumber ? escapeHtml(job.HOJobNumber) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Client) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DateOpened) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DescriptionOfWork) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.TARGET_DATE) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.CompletionDate ? escapeHtml(job.CompletionDate) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.DeliveredDate ? escapeHtml(job.DeliveredDate) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.FileClosed == 1 ? 'Yes' : 'No') + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.LabourHours) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.MaterialCost) + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.TypeOfWork ? escapeHtml(job.TypeOfWork) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.Remarks ? escapeHtml(job.Remarks) : 'N/A') + '</td>';
+                                tableHtml += '</tr>';
+                            });
                         });
                     });
                     $('#jobTable').html(tableHtml);
