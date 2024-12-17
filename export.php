@@ -67,7 +67,7 @@ try {
     // Start of the Excel file
     echo "<table border='1'>";
     echo "<tr>
-            <th>Order ID</th>
+         
             <th>Year</th>
             <th>DT Job Number</th>
             <th>Client</th>
@@ -79,7 +79,7 @@ try {
     // Populate the table with data
     foreach ($jobs as $job) {
         echo "<tr>
-                <td>" . htmlspecialchars($job['sr_no']) . "</td>
+             
                 <td>" . htmlspecialchars($job['Year']) . "</td>
                 <td>" . htmlspecialchars($job['DTJobNumber']) . "</td>
                 <td>" . htmlspecialchars($job['Client']) . "</td>

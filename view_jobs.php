@@ -9,7 +9,7 @@ include('db_conn.php');
 
 // Fetch distinct TypeOfWork for the dropdown
 try {
-    $typeQuery = "SELECT DISTINCT TypeOfWork FROM jayantha_1500_table ORDER BY TypeOfWork ASC";
+    $typeQuery = "SELECT DISTINCT TypeOfWork FROM jayantha_1500_table WHERE TypeOfWork IS NOT NULL AND TypeOfWork != '' ORDER BY TypeOfWork ASC";
     $typeStmt = $pdo->prepare($typeQuery);
     $typeStmt->execute();
     $typesOfWork = $typeStmt->fetchAll(PDO::FETCH_COLUMN);
@@ -20,7 +20,7 @@ try {
 
 // Fetch distinct Years for the dropdown
 try {
-    $yearQuery = "SELECT DISTINCT Year FROM jayantha_1500_table ORDER BY Year ASC";
+    $yearQuery = "SELECT DISTINCT Year FROM jayantha_1500_table WHERE Year IS NOT NULL ORDER BY Year ASC";
     $yearStmt = $pdo->prepare($yearQuery);
     $yearStmt->execute();
     $years = $yearStmt->fetchAll(PDO::FETCH_COLUMN);
@@ -31,7 +31,7 @@ try {
 
 // Fetch distinct DT Job Numbers for the dropdown
 try {
-    $jobNumberQuery = "SELECT DISTINCT DTJobNumber FROM jayantha_1500_table ORDER BY DTJobNumber ASC";
+    $jobNumberQuery = "SELECT DISTINCT DTJobNumber FROM jayantha_1500_table WHERE DTJobNumber IS NOT NULL AND DTJobNumber != '' ORDER BY DTJobNumber ASC";
     $jobNumberStmt = $pdo->prepare($jobNumberQuery);
     $jobNumberStmt->execute();
     $dtJobNumbers = $jobNumberStmt->fetchAll(PDO::FETCH_COLUMN);
@@ -42,7 +42,7 @@ try {
 
 // Fetch distinct Clients for the dropdown
 try {
-    $clientQuery = "SELECT DISTINCT Client FROM jayantha_1500_table ORDER BY Client ASC";
+    $clientQuery = "SELECT DISTINCT Client FROM jayantha_1500_table WHERE Client IS NOT NULL AND Client != '' ORDER BY Client ASC";
     $clientStmt = $pdo->prepare($clientQuery);
     $clientStmt->execute();
     $clients = $clientStmt->fetchAll(PDO::FETCH_COLUMN);
@@ -52,6 +52,7 @@ try {
 }
 ?>
 
+<?php include('header.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,12 +60,11 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
-    <link href="css/tailwind.min.css" rel="stylesheet">
-    <link href="css/all.min.css" rel="stylesheet">
-    <link href="font/css/all.min.css" rel="stylesheet">
-    <link href="css/select2.min.css" rel="stylesheet" />
-    <script src="css/jquery-3.6.0.min.js"></script>
-    <script src="css/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         /* Existing CSS styles */
         table {
@@ -85,19 +85,18 @@ try {
         .pagination-link {
             padding: 8px 16px;
             margin: 0 4px;
-            border: 1px solid #ddd;
+            border: none;
             border-radius: 4px;
-            text-decoration: none;
-            color: #007bff;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
         }
         .pagination-link:hover {
-            background-color: #007bff;
-            color: white;
+            background-color: #0056b3;
         }
-        .pagination-link.active {
-            background-color: #007bff;
-            color: white;
-            pointer-events: none;
+        .pagination-link.disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         /* Export button styles */
         .export-button {
@@ -112,13 +111,27 @@ try {
         .export-button:hover {
             background-color: #218838;
         }
+        /* Group Header Styles */
+        .group-header {
+            background-color: #e2e8f0;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-<?php include('header.php'); ?>
 
 <div class="container mx-auto mt-8 p-6 bg-white rounded-lg shadow-xl">
     <h2 class="text-3xl font-bold text-gray-800 mb-6">Job Details</h2>
+
+    <!-- Display Success or Error Message -->
+    <?php if (isset($_SESSION['message'])): ?>
+        <div class="p-4 mb-4 <?php echo ($_SESSION['message_type'] == 'success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+            <?php 
+                echo htmlspecialchars($_SESSION['message']); 
+                unset($_SESSION['message'], $_SESSION['message_type']); 
+            ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Main Search Bar -->
     <div class="mb-6 flex flex-wrap gap-4">
@@ -128,7 +141,7 @@ try {
     <!-- Search Filters and Export Button -->
     <div class="mb-6 flex flex-wrap gap-4">
         <!-- Client Dropdown -->
-        <select id="clientSearch" class="p-2 border rounded">
+        <select id="clientSearch" class="p-2 border rounded select2">
             <option value="">All Clients</option>
             <?php foreach ($clients as $client): ?>
                 <option value="<?php echo htmlspecialchars($client); ?>"><?php echo htmlspecialchars($client); ?></option>
@@ -136,7 +149,7 @@ try {
         </select>
 
         <!-- DT Job Number Dropdown -->
-        <select id="jobNumberSearch" class="p-2 border rounded">
+        <select id="jobNumberSearch" class="p-2 border rounded select2">
             <option value="">All DT Job Numbers</option>
             <?php foreach ($dtJobNumbers as $jobNumber): ?>
                 <option value="<?php echo htmlspecialchars($jobNumber); ?>"><?php echo htmlspecialchars($jobNumber); ?></option>
@@ -144,7 +157,7 @@ try {
         </select>
 
         <!-- Year Dropdown -->
-        <select id="yearSearch" class="p-2 border rounded">
+        <select id="yearSearch" class="p-2 border rounded select2">
             <option value="">All Years</option>
             <?php foreach ($years as $year): ?>
                 <option value="<?php echo htmlspecialchars($year); ?>"><?php echo htmlspecialchars($year); ?></option>
@@ -152,15 +165,22 @@ try {
         </select>
 
         <!-- Type of Work Dropdown -->
-        <select id="typeOfWorkSearch" class="p-2 border rounded">
+        <select id="typeOfWorkSearch" class="p-2 border rounded select2">
             <option value="">All Types of Work</option>
             <?php foreach ($typesOfWork as $type): ?>
                 <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
             <?php endforeach; ?>
         </select>
 
-        From<input type="date" id="fromDate" placeholder="From Date" class="p-2 border rounded">
-        To<input type="date" id="toDate" placeholder="To Date" class="p-2 border rounded">
+        <!-- Date Range Filters -->
+        <div class="flex items-center gap-2">
+            <label for="fromDate" class="text-sm font-semibold text-gray-700">From:</label>
+            <input type="date" id="fromDate" placeholder="From Date" class="p-2 border rounded">
+        </div>
+        <div class="flex items-center gap-2">
+            <label for="toDate" class="text-sm font-semibold text-gray-700">To:</label>
+            <input type="date" id="toDate" placeholder="To Date" class="p-2 border rounded">
+        </div>
 
         <!-- Export Button -->
         <button id="exportButton" class="export-button">Export to Excel</button>
@@ -171,7 +191,6 @@ try {
         <table class="min-w-full table-auto border-collapse bg-gray-100 rounded-lg overflow-hidden">
             <thead class="bg-gray-200 text-gray-800">
                 <tr>
-                    <th class="px-6 py-3 text-left">Order ID</th>
                     <th class="px-6 py-3 text-left">Year</th>
                     <th class="px-6 py-3 text-left">Month</th>
                     <th class="px-6 py-3 text-left">DT Job Number</th>
@@ -197,12 +216,18 @@ try {
 
     <!-- Pagination -->
     <div id="pagination" class="flex justify-center mt-4">
-        <!-- Pagination links will be dynamically loaded -->
+        <!-- "Previous" and "Next" buttons will be dynamically loaded -->
     </div>
 </div>
 
 <script>
 $(document).ready(function() {
+    // Initialize Select2 for better dropdowns
+    $('.select2').select2({
+        placeholder: "Select an option",
+        allowClear: true
+    });
+
     function loadJobs(page = 1) {
         var mainSearch = $('#mainSearch').val();
         var client = $('#clientSearch').val();
@@ -226,11 +251,46 @@ $(document).ready(function() {
                 page: page
             },
             success: function(response) {
-                $('#jobTable').html(response.tableData);
-                $('#pagination').html(response.pagination);
+                // Parse the JSON response
+                if(response.success){
+                    var tableHtml = '';
+                    $.each(response.groupedData, function(yearKey, jobs) {
+                        tableHtml += '<tr class="group-header"><td colspan="15">Year: ' + escapeHtml(yearKey) + '</td></tr>';
+                        $.each(jobs, function(index, job) {
+                            tableHtml += '<tr>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Year) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Month) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DTJobNumber) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.HOJobNumber ? escapeHtml(job.HOJobNumber) : 'N/A') + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Client) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DateOpened) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DescriptionOfWork) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.TARGET_DATE) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.CompletionDate ? escapeHtml(job.CompletionDate) : 'N/A') + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.DeliveredDate ? escapeHtml(job.DeliveredDate) : 'N/A') + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.FileClosed == 1 ? 'Yes' : 'No') + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.LabourHours) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.MaterialCost) + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.TypeOfWork ? escapeHtml(job.TypeOfWork) : 'N/A') + '</td>';
+                            tableHtml += '<td class="px-6 py-4 border-b">' + (job.Remarks ? escapeHtml(job.Remarks) : 'N/A') + '</td>';
+                            tableHtml += '</tr>';
+                        });
+                    });
+                    $('#jobTable').html(tableHtml);
+                    $('#pagination').html(response.pagination);
+                } else {
+                    $('#jobTable').html('<tr><td colspan="15" class="text-center text-red-500">Error loading data.</td></tr>');
+                    $('#pagination').html('');
+                }
             },
             dataType: 'json'
         });
+    }
+
+    // Function to escape HTML to prevent XSS
+    function escapeHtml(text) {
+        if(!text) return '';
+        return $('<div>').text(text).html();
     }
 
     // Load jobs on page load
@@ -241,8 +301,14 @@ $(document).ready(function() {
         loadJobs();
     });
 
-    // Handle pagination click
-    $(document).on('click', '.pagination-link', function(e) {
+    // Handle pagination click for "Previous" and "Next"
+    $(document).on('click', '.pagination-link.prev:not([disabled])', function(e) {
+        e.preventDefault();
+        var page = $(this).data('page');
+        loadJobs(page);
+    });
+
+    $(document).on('click', '.pagination-link.next:not([disabled])', function(e) {
         e.preventDefault();
         var page = $(this).data('page');
         loadJobs(page);
@@ -260,13 +326,13 @@ $(document).ready(function() {
 
         // Create a form dynamically to submit the data
         var form = $('<form action="export.php" method="POST"></form>');
-        form.append('<input type="hidden" name="mainSearch" value="' + mainSearch + '">');
-        form.append('<input type="hidden" name="client" value="' + client + '">');
-        form.append('<input type="hidden" name="jobNumber" value="' + jobNumber + '">');
-        form.append('<input type="hidden" name="year" value="' + year + '">');
-        form.append('<input type="hidden" name="typeOfWork" value="' + typeOfWork + '">');
-        form.append('<input type="hidden" name="fromDate" value="' + fromDate + '">');
-        form.append('<input type="hidden" name="toDate" value="' + toDate + '">');
+        form.append('<input type="hidden" name="mainSearch" value="' + encodeURIComponent(mainSearch) + '">');
+        form.append('<input type="hidden" name="client" value="' + encodeURIComponent(client) + '">');
+        form.append('<input type="hidden" name="jobNumber" value="' + encodeURIComponent(jobNumber) + '">');
+        form.append('<input type="hidden" name="year" value="' + encodeURIComponent(year) + '">');
+        form.append('<input type="hidden" name="typeOfWork" value="' + encodeURIComponent(typeOfWork) + '">');
+        form.append('<input type="hidden" name="fromDate" value="' + encodeURIComponent(fromDate) + '">');
+        form.append('<input type="hidden" name="toDate" value="' + encodeURIComponent(toDate) + '">');
         $('body').append(form);
         form.submit();
     });
