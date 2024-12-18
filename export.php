@@ -1,97 +1,73 @@
 <?php
 include('db_conn.php');
 
-// Retrieve POST parameters
-$mainSearch = isset($_POST['mainSearch']) ? trim($_POST['mainSearch']) : '';
-$client = isset($_POST['client']) ? trim($_POST['client']) : '';
-$jobNumber = isset($_POST['jobNumber']) ? trim($_POST['jobNumber']) : '';
-$year = isset($_POST['year']) ? trim($_POST['year']) : '';
-$typeOfWork = isset($_POST['typeOfWork']) ? trim($_POST['typeOfWork']) : '';
-$fromDate = isset($_POST['fromDate']) ? trim($_POST['fromDate']) : '';
-$toDate = isset($_POST['toDate']) ? trim($_POST['toDate']) : '';
-
-// Build the base SQL query
-$sql = "SELECT * FROM jayantha_1500_table WHERE 1=1";
-$params = [];
-
-// Add main search condition
-if (!empty($mainSearch)) {
-    $sql .= " AND (Client LIKE :mainSearch 
-                OR DTJobNumber LIKE :mainSearch 
-                OR Year LIKE :mainSearch 
-                OR TypeOfWork LIKE :mainSearch 
-                OR DescriptionOfWork LIKE :mainSearch 
-                OR Remarks LIKE :mainSearch)";
-    $params[':mainSearch'] = '%' . $mainSearch . '%';
-}
-
-// Add conditions based on individual search inputs
-if (!empty($client)) {
-    $sql .= " AND Client LIKE :client";
-    $params[':client'] = '%' . $client . '%';
-}
-if (!empty($jobNumber)) {
-    $sql .= " AND DTJobNumber LIKE :jobNumber";
-    $params[':jobNumber'] = '%' . $jobNumber . '%';
-}
-if (!empty($year)) {
-    $sql .= " AND Year = :year";
-    $params[':year'] = $year;
-}
-if (!empty($typeOfWork)) {
-    $sql .= " AND TypeOfWork = :typeOfWork";
-    $params[':typeOfWork'] = $typeOfWork;
-}
-if (!empty($fromDate) && !empty($toDate)) {
-    $sql .= " AND DateOpened BETWEEN :fromDate AND :toDate";
-    $params[':fromDate'] = $fromDate;
-    $params[':toDate'] = $toDate;
-}
-
-// Execute the query
+// Fetch all data for displaying to the user
+$sql = "SELECT * FROM jayantha_1500_table";
 try {
-    $stmt = $pdo->prepare($sql);
-
-    // Bind parameters
-    foreach ($params as $key => &$value) {
-        $stmt->bindValue($key, $value);
-    }
-
-    $stmt->execute();
+    $stmt = $pdo->query($sql);
     $jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Set headers to download the file as Excel
-    header("Content-Type: application/vnd.ms-excel");
-    header("Content-Disposition: attachment; filename=job_details.xls");
-
-    // Start of the Excel file
-    echo "<table border='1'>";
-    echo "<tr>
-         
-            <th>Year</th>
-            <th>DT Job Number</th>
-            <th>Client</th>
-            <th>Date Opened</th>
-            <th>Description of Work</th>
-            <th>Remarks</th>
-        </tr>";
-
-    // Populate the table with data
-    foreach ($jobs as $job) {
-        echo "<tr>
-             
-                <td>" . htmlspecialchars($job['Year']) . "</td>
-                <td>" . htmlspecialchars($job['DTJobNumber']) . "</td>
-                <td>" . htmlspecialchars($job['Client']) . "</td>
-                <td>" . htmlspecialchars($job['DateOpened']) . "</td>
-                <td>" . htmlspecialchars($job['DescriptionOfWork']) . "</td>
-                <td>" . htmlspecialchars($job['Remarks']) . "</td>
-            </tr>";
-    }
-
-    echo "</table>";
 } catch (PDOException $e) {
-    // Handle error appropriately
-    echo "Error exporting data.";
+    echo "Error fetching data: " . $e->getMessage();
+    exit;
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Columns for Export</title>
+    <link href="css/tailwind.min.css" rel="stylesheet">
+<link href="css/all.min.css" rel="stylesheet">
+<link href="font/css/all.min.css" rel="stylesheet">
+ <link href="css/select2.min.css" rel="stylesheet" />
+<script src="css/jquery-3.6.0.min.js"></script>
+<script src="css/select2.min.js"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-2xl font-bold mb-6 text-center">Select Columns for Export</h1>
+        <div class="container mx-auto p-6">
+        <button id="backButton" class="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
+            Back
+        </button>
+    </div>
+        <form action="download_excel.php" method="POST">
+            <!-- Column Selection -->
+            <h2 class="text-lg font-semibold mb-4">Select Columns to Export:</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <label><input type="checkbox" name="columns[]" value="Year" checked> Year</label>
+                <label><input type="checkbox" name="columns[]" value="Month" checked> Month</label>
+                <label><input type="checkbox" name="columns[]" value="DTJobNumber" checked> DT Job Number</label>
+                <label><input type="checkbox" name="columns[]" value="HOJobNumber" checked> HO Job Number</label>
+                <label><input type="checkbox" name="columns[]" value="Client" checked> Client</label>
+                <label><input type="checkbox" name="columns[]" value="DateOpened" checked> Date Opened</label>
+                <label><input type="checkbox" name="columns[]" value="DescriptionOfWork" checked> Description of Work</label>
+                <label><input type="checkbox" name="columns[]" value="Target_Date" checked> Target Date</label>
+                <label><input type="checkbox" name="columns[]" value="CompletionDate" checked> Completion Date</label>
+                <label><input type="checkbox" name="columns[]" value="DeliveredDate" checked> Delivered Date</label>
+                <label><input type="checkbox" name="columns[]" value="FileClosed" checked> File Closed</label>
+                <label><input type="checkbox" name="columns[]" value="LabourHours" checked> Labour Hours</label>
+                <label><input type="checkbox" name="columns[]" value="MaterialCost" checked> Material Cost</label>
+                <label><input type="checkbox" name="columns[]" value="TypeOfWork" checked> Type of Work</label>
+                <label><input type="checkbox" name="columns[]" value="Remarks" checked> Remarks</label>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Download Selected Columns</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        $(document).ready(function(){
+          $('#backButton').on('click', function() {
+                window.history.back();
+            })
+        });
+    </script>
+</body>
+
+</html>

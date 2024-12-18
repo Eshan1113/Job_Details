@@ -60,17 +60,13 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <style>
+    <link href="css/tailwind.min.css" rel="stylesheet">
+<link href="css/all.min.css" rel="stylesheet">
+<link href="font/css/all.min.css" rel="stylesheet">
+ <link href="css/select2.min.css" rel="stylesheet" />
+<script src="css/jquery-3.6.0.min.js"></script>
+<script src="css/select2.min.js"></script>
+<style>
         /* Existing CSS styles */
         table {
             border-collapse: collapse;
@@ -92,7 +88,7 @@ try {
             margin: 0 4px;
             border: none;
             border-radius: 4px;
-            background-color: #007bff;
+            background-color:rgb(255, 42, 0);
             color: white;
             cursor: pointer;
         }
