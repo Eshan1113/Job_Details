@@ -137,9 +137,9 @@ try {
         </div>
     <?php endif; ?>
     
-    <div class="flex justify-end mb-4">
+    <!-- <div class="flex justify-end mb-4">
     <button id="exportButton" class="export-button">Export to Excel</button>
-</div>
+</div> -->
     <!-- Main Search Bar -->
     <div class="mb-6 flex flex-wrap gap-4">
         <input type="text" id="mainSearch" placeholder="Search..." class="p-2 border rounded w-full md:w-1/2">

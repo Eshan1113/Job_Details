@@ -1,11 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: login.php"); // Redirect to login if not authenticated
     exit();
 }
 
-include('db_conn.php');
+include('db_conn.php'); // Database connection
 
 // Fetch distinct TypeOfWork for the dropdown
 try {
@@ -14,7 +14,6 @@ try {
     $typeStmt->execute();
     $typesOfWork = $typeStmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
-    // Handle error appropriately
     $typesOfWork = [];
 }
 
@@ -25,7 +24,6 @@ try {
     $yearStmt->execute();
     $years = $yearStmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
-    // Handle error appropriately
     $years = [];
 }
 
@@ -36,7 +34,6 @@ try {
     $jobNumberStmt->execute();
     $dtJobNumbers = $jobNumberStmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
-    // Handle error appropriately
     $dtJobNumbers = [];
 }
 
@@ -47,11 +44,9 @@ try {
     $clientStmt->execute();
     $clients = $clientStmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
-    // Handle error appropriately
     $clients = [];
 }
 ?>
-
 <?php include('header.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,12 +55,22 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
-    <link href="css/tailwind.min.css" rel="stylesheet">
-    <link href="css/all.min.css" rel="stylesheet">
-    <link href="font/css/all.min.css" rel="stylesheet">
-    <link href="css/select2.min.css" rel="stylesheet" />
-    <script src="css/jquery-3.6.0.min.js"></script>
-    <script src="css/select2.min.js"></script>
+  <!-- Tailwind CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<!-- Font Awesome CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<!-- Select2 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+
     <style>
         /* Existing CSS styles */
         table {
@@ -284,6 +289,34 @@ try {
     </div>
 </div>
 
+<!-- Export Modal -->
+<div id="exportModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 class="text-2xl font-bold mb-4">Select Columns to Export</h2>
+        <form id="exportForm">
+            <div class="grid grid-cols-2 gap-4">
+                <label><input type="checkbox" name="columns[]" value="Year" checked> Year</label>
+                <label><input type="checkbox" name="columns[]" value="Month" checked> Month</label>
+                <label><input type="checkbox" name="columns[]" value="DTJobNumber" checked> DT Job Number</label>
+                <label><input type="checkbox" name="columns[]" value="HOJobNumber"> HO Job Number</label>
+                <label><input type="checkbox" name="columns[]" value="Client" checked> Client</label>
+                <label><input type="checkbox" name="columns[]" value="DateOpened" checked> Date Opened</label>
+                <label><input type="checkbox" name="columns[]" value="DescriptionOfWork" checked> Description of Work</label>
+                <label><input type="checkbox" name="columns[]" value="TARGET_DATE"> Target Date</label>
+                <label><input type="checkbox" name="columns[]" value="CompletionDate"> Completion Date</label>
+                <label><input type="checkbox" name="columns[]" value="DeliveredDate"> Delivered Date</label>
+                <label><input type="checkbox" name="columns[]" value="FileClosed"> File Closed</label>
+                <label><input type="checkbox" name="columns[]" value="LabourHours"> Labour Hours</label>
+                <label><input type="checkbox" name="columns[]" value="MaterialCost"> Material Cost</label>
+                <label><input type="checkbox" name="columns[]" value="TypeOfWork"> Type of Work</label>
+                <label><input type="checkbox" name="columns[]" value="Remarks"> Remarks</label>
+            </div>
+            <button type="button" id="confirmExport" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Export Selected Columns</button>
+        </form>
+    </div>
+</div>
+
 <!-- Edit Modal -->
 <div id="editModal" class="modal">
     <div class="modal-content">
@@ -330,7 +363,7 @@ try {
                 </div>
                 <div>
                     <label for="editDeliveredDate" class="block text-sm font-medium text-gray-700">Delivered Date</label>
-                    <input type="text" id="editDeliveredDate" name="DeliveredDate" class="mt-1 p-2 border rounded w-full">
+                    <input type="date" id="editDeliveredDate" name="DeliveredDate" class="mt-1 p-2 border rounded w-full">
                 </div>
                 <div>
                     <label for="editFileClosed" class="block text-sm font-medium text-gray-700">File Closed</label>
@@ -367,7 +400,7 @@ $(document).ready(function() {
     $('#clientSearch').select2({
         placeholder: "Select a Client",
         allowClear: true,
-        width: 'resolve' // Ensure the width matches the original element
+        width: 'resolve'
     });
 
     $('#jobNumberSearch').select2({
@@ -412,7 +445,6 @@ $(document).ready(function() {
                 page: page
             },
             success: function(response) {
-                // Parse the JSON response
                 if(response.success){
                     var tableHtml = '';
                     $.each(response.groupedData, function(yearKey, months) {
@@ -449,7 +481,12 @@ $(document).ready(function() {
                     $('#pagination').html('');
                 }
             },
-            dataType: 'json'
+            dataType: 'json',
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                $('#jobTable').html('<tr><td colspan="16" class="text-center text-red-500">An error occurred while loading data.</td></tr>');
+                $('#pagination').html('');
+            }
         });
     }
 
@@ -480,8 +517,50 @@ $(document).ready(function() {
         loadJobs(page);
     });
 
-    // Handle Export Button Click
-    $('#exportButton').on('click', function() {
+    // Export Modal Handling
+    var exportModal = $('#exportModal');
+    var exportBtn = $('#exportButton');
+    var exportSpan = $('#exportModal .close');
+
+    // When the user clicks the Export button, open the modal 
+    exportBtn.on('click', function() {
+        exportModal.show();
+    });
+
+    // When the user clicks on <span> (x), close the modal
+    exportSpan.on('click', function() {
+        exportModal.hide();
+    });
+
+    // When the user clicks anywhere outside of the modal, close it
+    $(window).on('click', function(event) {
+        if ($(event.target).is(exportModal)) {
+            exportModal.hide();
+        }
+    });
+
+    // Handle Export Confirmation
+    $('#confirmExport').on('click', function() {
+        var selectedColumns = [];
+        $('input[name="columns[]"]:checked').each(function() {
+            selectedColumns.push($(this).val());
+        });
+        
+        if(selectedColumns.length === 0){
+            alert('Please select at least one column to export.');
+            return;
+        }
+        
+        // Initiate export with selected columns
+        exportSelectedColumns(selectedColumns);
+        
+        // Close the modal
+        exportModal.hide();
+    });
+
+    // Function to handle export via AJAX
+    function exportSelectedColumns(columns) {
+        // Fetch current filter values
         var mainSearch = $('#mainSearch').val();
         var client = $('#clientSearch').val();
         var jobNumber = $('#jobNumberSearch').val();
@@ -490,32 +569,89 @@ $(document).ready(function() {
         var fromDate = $('#fromDate').val();
         var toDate = $('#toDate').val();
 
-        // Create a form dynamically to submit the data
-        var form = $('<form action="export.php" method="POST"></form>');
-        form.append('<input type="hidden" name="mainSearch" value="' + encodeURIComponent(mainSearch) + '">');
-        form.append('<input type="hidden" name="client" value="' + encodeURIComponent(client) + '">');
-        form.append('<input type="hidden" name="jobNumber" value="' + encodeURIComponent(jobNumber) + '">');
-        form.append('<input type="hidden" name="year" value="' + encodeURIComponent(year) + '">');
-        form.append('<input type="hidden" name="typeOfWork" value="' + encodeURIComponent(typeOfWork) + '">');
-        form.append('<input type="hidden" name="fromDate" value="' + encodeURIComponent(fromDate) + '">');
-        form.append('<input type="hidden" name="toDate" value="' + encodeURIComponent(toDate) + '">');
-        $('body').append(form);
-        form.submit();
-    });
+        $.ajax({
+            url: 'export.php',
+            type: 'POST',
+            data: {
+                columns: columns,
+                mainSearch: mainSearch,
+                client: client,
+                jobNumber: jobNumber,
+                year: year,
+                typeOfWork: typeOfWork,
+                fromDate: fromDate,
+                toDate: toDate
+            },
+            xhrFields: {
+                responseType: 'blob' // Important for handling binary data
+            },
+            success: function(blob, status, xhr) {
+                // Check if the Blob is empty (likely an error)
+                if (blob.size === 0) {
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        var errorMessage = reader.result;
+                        alert('Error: ' + errorMessage);
+                    };
+                    reader.readAsText(blob);
+                    return;
+                }
+
+                // Get the filename from the Content-Disposition header
+                var disposition = xhr.getResponseHeader('Content-Disposition');
+                var filename = "";
+                if (disposition && disposition.indexOf('attachment') !== -1) {
+                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    var matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) { 
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                    // IE workaround
+                    window.navigator.msSaveBlob(blob, filename);
+                } else {
+                    var URL = window.URL || window.webkitURL;
+                    var downloadUrl = URL.createObjectURL(blob);
+
+                    if (filename) { 
+                        // Use HTML5 a[download] attribute to specify filename
+                        var a = document.createElement("a");
+                        a.href = downloadUrl;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    } else {
+                        // Fallback if filename is not provided
+                        window.location = downloadUrl;
+                    }
+
+                    // Release the object URL
+                    URL.revokeObjectURL(downloadUrl);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Export Error:', status, error);
+                alert('An error occurred while exporting data.');
+            }
+        });
+    }
 
     // Edit Modal Functionality
-    var modal = $('#editModal');
-    var span = $('.close');
+    var editModal = $('#editModal');
+    var editSpan = $('#editModal .close');
 
     // When the user clicks on <span> (x), close the modal
-    span.on('click', function() {
-        modal.hide();
+    editSpan.on('click', function() {
+        editModal.hide();
     });
 
     // When the user clicks anywhere outside of the modal, close it
     $(window).on('click', function(event) {
-        if ($(event.target).is(modal)) {
-            modal.hide();
+        if ($(event.target).is(editModal)) {
+            editModal.hide();
         }
     });
 
@@ -540,19 +676,23 @@ $(document).ready(function() {
                     $('#editDescriptionOfWork').val(response.data.DescriptionOfWork);
                     $('#editTARGET_DATE').val(response.data.TARGET_DATE);
                     $('#editCompletionDate').val(response.data.CompletionDate);
-                    $('#editDeliveredDate').val(response.data.DeliveredDate);
+                    $('#editDeliveredDate').val(response.data.DeliveredDate ? response.data.DeliveredDate : '');
                     $('#editFileClosed').val(response.data.FileClosed);
                     $('#editLabourHours').val(response.data.LabourHours);
                     $('#editMaterialCost').val(response.data.MaterialCost);
                     $('#editTypeOfWork').val(response.data.TypeOfWork);
                     $('#editRemarks').val(response.data.Remarks);
                     // Show the modal
-                    modal.show();
+                    editModal.show();
                 } else {
                     alert('Failed to fetch data for editing. ' + escapeHtml(response.message || ''));
                 }
             },
-            dataType: 'json'
+            dataType: 'json',
+            error: function(xhr, status, error) {
+                console.error('AJAX Edit Error:', status, error);
+                alert('An error occurred while fetching data for editing.');
+            }
         });
     });
 
@@ -568,13 +708,17 @@ $(document).ready(function() {
             success: function(response) {
                 if(response.success){
                     alert('Record updated successfully.');
-                    modal.hide();
+                    editModal.hide();
                     loadJobs(); // Refresh the table data
                 } else {
                     alert('Failed to update the record. ' + escapeHtml(response.message || ''));
                 }
             },
-            dataType: 'json'
+            dataType: 'json',
+            error: function(xhr, status, error) {
+                console.error('AJAX Edit Submit Error:', status, error);
+                alert('An error occurred while updating the record.');
+            }
         });
     });
 });
