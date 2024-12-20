@@ -4,6 +4,7 @@
                 Welcome, <?php echo $_SESSION['username']; ?>
             </div>
             <div class="space-x-4">
+            <a href="view_chart.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">View Chart Details</a>
             <a href="view_jobs.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">View Job Details</a>
                 <a href="dashboard.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">Add Job Details</a>
                 <a href="add_client.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">Add Clinet</a>

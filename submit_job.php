@@ -87,6 +87,32 @@ if (!empty($materialCost) && !is_numeric($materialCost)) {
     $errors[] = 'Material Cost must be a valid number.';
 }
 
+// Check for unique DTJobNumber and HOJobNumber
+try {
+    // Prepare SQL to check DTJobNumber
+    if (!empty($dtJobNumber)) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM jayantha_1500_table WHERE DTJobNumber = :dtJobNumber");
+        $stmt->execute([':dtJobNumber' => $dtJobNumber]);
+        $dtCount = $stmt->fetchColumn();
+        if ($dtCount > 0) {
+            $errors[] = 'DT Job Number already exists.';
+        }
+    }
+
+    // Prepare SQL to check HOJobNumber if provided
+    if (!empty($hoJobNumber)) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM jayantha_1500_table WHERE HOJobNumber = :hoJobNumber");
+        $stmt->execute([':hoJobNumber' => $hoJobNumber]);
+        $hoCount = $stmt->fetchColumn();
+        if ($hoCount > 0) {
+            $errors[] = 'HO Job Number already exists.';
+        }
+    }
+} catch (PDOException $e) {
+    // Handle query errors
+    $errors[] = 'Error checking job numbers: ' . htmlspecialchars($e->getMessage());
+}
+
 // If there are errors, redirect back with error messages
 if (!empty($errors)) {
     $_SESSION['message'] = implode('<br>', $errors);
@@ -138,7 +164,7 @@ try {
         ':year' => $year,
         ':month' => $month,
         ':dtJobNumber' => $dtJobNumber,
-        ':hoJobNumber' => $hoJobNumber,
+        ':hoJobNumber' => $hoJobNumber ?: null, // Allow NULL
         ':client' => $client,
         ':dateOpened' => $dateOpened,
         ':descriptionOfWork' => $descriptionOfWork,
@@ -155,8 +181,20 @@ try {
     $_SESSION['message'] = 'Job details added successfully!';
     $_SESSION['message_type'] = 'success';
 } catch (PDOException $e) {
-    // Handle insertion errors
-    $_SESSION['message'] = 'Error adding job details: ' . htmlspecialchars($e->getMessage());
+    // Handle insertion errors, including duplicate entries if unique constraints are set
+    if ($e->getCode() == 23000) { // Integrity constraint violation
+        // Determine which field caused the duplicate
+        if (strpos($e->getMessage(), 'DTJobNumber') !== false) {
+            $errorMsg = 'DT Job Number already exists.';
+        } elseif (strpos($e->getMessage(), 'HOJobNumber') !== false) {
+            $errorMsg = 'HO Job Number already exists.';
+        } else {
+            $errorMsg = 'Duplicate entry detected.';
+        }
+        $_SESSION['message'] = $errorMsg;
+    } else {
+        $_SESSION['message'] = 'Error adding job details: ' . htmlspecialchars($e->getMessage());
+    }
     $_SESSION['message_type'] = 'error';
 }
 

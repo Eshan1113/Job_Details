@@ -188,13 +188,13 @@ try {
 
     <!-- Display Success or Error Message -->
     <?php if (isset($_SESSION['message'])): ?>
-        <div class="p-4 mb-4 <?php echo ($_SESSION['message_type'] == 'success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-            <?php 
-                echo htmlspecialchars($_SESSION['message']); 
-                unset($_SESSION['message'], $_SESSION['message_type']); 
-            ?>
-        </div>
-    <?php endif; ?>
+    <div class="p-4 mb-4 <?php echo ($_SESSION['message_type'] == 'success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+        <?php 
+            echo htmlspecialchars($_SESSION['message']); 
+            unset($_SESSION['message'], $_SESSION['message_type']); 
+        ?>
+    </div>
+<?php endif; ?>
     
     <div class="flex justify-end mb-6">
         <button id="exportButton" class="export-button">Export to Excel</button>
