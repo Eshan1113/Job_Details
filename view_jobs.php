@@ -55,21 +55,20 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
-  <!-- Tailwind CSS -->
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-<!-- Font Awesome CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
-<!-- Select2 CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <!-- Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Select2 JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-
+    <!-- Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
     <style>
         /* Existing CSS styles */
@@ -81,6 +80,7 @@ try {
             text-align: left;
             padding: 8px;
             border-bottom: 1px solid #ddd;
+            word-wrap: break-word; /* Allow text to wrap within cells */
         }
         th {
             background-color: #f2f2f2;
@@ -194,7 +194,7 @@ try {
             unset($_SESSION['message'], $_SESSION['message_type']); 
         ?>
     </div>
-<?php endif; ?>
+    <?php endif; ?>
     
     <div class="flex justify-end mb-6">
         <button id="exportButton" class="export-button">Export to Excel</button>
@@ -255,26 +255,44 @@ try {
     </div>
 
     <!-- Table wrapper -->
-    <div class="overflow-x-auto">
-        <table class="min-w-full table-auto border-collapse bg-gray-100 rounded-lg overflow-hidden">
+    <div class="overflow-y-auto max-h-96">
+        <table class="min-w-full table-auto table-fixed border-collapse bg-gray-100 rounded-lg">
+            <colgroup>
+                <col class="w-16"> <!-- Year -->
+                <col class="w-24"> <!-- Month -->
+                <col class="w-24"> <!-- DT Job Number -->
+                <col class="w-24"> <!-- HO Job Number -->
+                <col class="w-24"> <!-- Client -->
+                <col class="w-24"> <!-- Date Opened -->
+                <col class="w-32"> <!-- Description of Work -->
+                <col class="w-24"> <!-- Target Date -->
+                <col class="w-24"> <!-- Completion Date -->
+                <col class="w-24"> <!-- Delivered Date -->
+                <col class="w-16"> <!-- File Closed -->
+                <col class="w-16"> <!-- Labour Hours -->
+                <col class="w-16"> <!-- Material Cost -->
+                <col class="w-24"> <!-- Type of Work -->
+                <col class="w-24"> <!-- Remarks -->
+                <col class="w-16"> <!-- Actions -->
+            </colgroup>
             <thead class="bg-gray-200 text-gray-800">
                 <tr>
-                    <th class="px-6 py-3 text-left">Year</th>
-                    <th class="px-6 py-3 text-left">Month</th>
-                    <th class="px-6 py-3 text-left">DT Job Number</th>
-                    <th class="px-6 py-3 text-left">HO Job Number</th>
-                    <th class="px-6 py-3 text-left">Client</th>
-                    <th class="px-6 py-3 text-left">Date Opened</th>
-                    <th class="px-6 py-3 text-left">Description of Work</th>
-                    <th class="px-6 py-3 text-left">Target Date</th>
-                    <th class="px-6 py-3 text-left">Completion Date</th>
-                    <th class="px-6 py-3 text-left">Delivered Date</th>
-                    <th class="px-6 py-3 text-left">File Closed</th>
-                    <th class="px-6 py-3 text-left">Labour Hours</th>
-                    <th class="px-6 py-3 text-left">Material Cost</th>
-                    <th class="px-6 py-3 text-left">Type of Work</th>
-                    <th class="px-6 py-3 text-left">Remarks</th>
-                    <th class="px-6 py-3 text-left">Actions</th> <!-- New Column for Actions -->
+                    <th class="px-2 py-2 text-left text-sm">Year</th>
+                    <th class="px-2 py-2 text-left text-sm">Month</th>
+                    <th class="px-2 py-2 text-left text-sm">DT Job Number</th>
+                    <th class="px-2 py-2 text-left text-sm hidden md:table-cell">HO Job Number</th>
+                    <th class="px-2 py-2 text-left text-sm">Client</th>
+                    <th class="px-2 py-2 text-left text-sm hidden lg:table-cell">Date Opened</th>
+                    <th class="px-2 py-2 text-left text-sm hidden lg:table-cell">Description of Work</th>
+                    <th class="px-2 py-2 text-left text-sm hidden lg:table-cell">Target Date</th>
+                    <th class="px-2 py-2 text-left text-sm hidden lg:table-cell">Completion Date</th>
+                    <th class="px-2 py-2 text-left text-sm hidden lg:table-cell">Delivered Date</th>
+                    <th class="px-2 py-2 text-left text-sm hidden md:table-cell">File Closed</th>
+                    <th class="px-2 py-2 text-left text-sm hidden md:table-cell">Labour Hours</th>
+                    <th class="px-2 py-2 text-left text-sm hidden md:table-cell">Material Cost</th>
+                    <th class="px-2 py-2 text-left text-sm">Type of Work</th>
+                    <th class="px-2 py-2 text-left text-sm hidden md:table-cell">Remarks</th>
+                    <th class="px-2 py-2 text-left text-sm">Actions</th>
                 </tr>
             </thead>
             <tbody id="jobTable">
@@ -368,8 +386,8 @@ try {
                 <div>
                     <label for="editFileClosed" class="block text-sm font-medium text-gray-700">File Closed</label>
                     <select id="editFileClosed" name="FileClosed" class="mt-1 p-2 border rounded w-full">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
                     </select>
                 </div>
                 <div>
@@ -453,23 +471,25 @@ $(document).ready(function() {
                             tableHtml += '<tr class="group-header"><td colspan="16">Month: ' + escapeHtml(monthKey) + '</td></tr>';
                             $.each(jobs, function(index, job) {
                                 tableHtml += '<tr>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Year) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Month) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DTJobNumber) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.HOJobNumber ? escapeHtml(job.HOJobNumber) : 'N/A') + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.Client) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DateOpened) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.DescriptionOfWork) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.TARGET_DATE) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.CompletionDate ? escapeHtml(job.CompletionDate) : 'N/A') + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.DeliveredDate ? escapeHtml(job.DeliveredDate) : 'N/A') + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.FileClosed == '1' ? 'Yes' : 'No') + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.LabourHours) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + escapeHtml(job.MaterialCost) + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.TypeOfWork ? escapeHtml(job.TypeOfWork) : 'N/A') + '</td>';
-                                tableHtml += '<td class="px-6 py-4 border-b">' + (job.Remarks ? escapeHtml(job.Remarks) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm">' + escapeHtml(job.Year) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm">' + escapeHtml(job.Month) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm">' + escapeHtml(job.DTJobNumber) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + (job.HOJobNumber ? escapeHtml(job.HOJobNumber) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm">' + escapeHtml(job.Client) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden lg:table-cell">' + escapeHtml(job.DateOpened) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden lg:table-cell">' + escapeHtml(job.DescriptionOfWork) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden lg:table-cell">' + escapeHtml(job.TARGET_DATE) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden lg:table-cell">' + (job.CompletionDate ? escapeHtml(job.CompletionDate) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden lg:table-cell">' + (job.DeliveredDate ? escapeHtml(job.DeliveredDate) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + escapeHtml(job.FileClosed) + '</td>'; // Display as "Yes" or "No"
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + escapeHtml(job.LabourHours) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + escapeHtml(job.MaterialCost) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm">' + (job.TypeOfWork ? escapeHtml(job.TypeOfWork) : 'N/A') + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + (job.Remarks ? escapeHtml(job.Remarks) : 'N/A') + '</td>';
                                 // Add Actions column with Edit button
-                                tableHtml += '<td class="px-6 py-4 border-b"><button class="edit-button" data-srno="' + escapeHtml(job.sr_no) + '">Edit</button></td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm">' +
+                                            '<button class="edit-button" data-srno="' + escapeHtml(job.sr_no) + '">Edit</button>' +
+                                            '</td>';
                                 tableHtml += '</tr>';
                             });
                         });
@@ -677,7 +697,7 @@ $(document).ready(function() {
                     $('#editTARGET_DATE').val(response.data.TARGET_DATE);
                     $('#editCompletionDate').val(response.data.CompletionDate);
                     $('#editDeliveredDate').val(response.data.DeliveredDate ? response.data.DeliveredDate : '');
-                    $('#editFileClosed').val(response.data.FileClosed);
+                    $('#editFileClosed').val(response.data.FileClosed); // Set to "Yes" or "No"
                     $('#editLabourHours').val(response.data.LabourHours);
                     $('#editMaterialCost').val(response.data.MaterialCost);
                     $('#editTypeOfWork').val(response.data.TypeOfWork);

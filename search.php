@@ -120,6 +120,8 @@ try {
     exit();
 }
 
+// No mapping needed; FileClosed is already "Yes" or "No"
+
 // Group the data by Year and then by Month
 $groupedData = [];
 foreach ($jobs as $job) {

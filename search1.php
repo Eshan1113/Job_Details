@@ -6,21 +6,22 @@ include('db_conn.php');
 $response = [
     'success' => false,
     'groupedData' => [],
-    'pagination' => ''
+    'pagination' => '',
+    'message' => ''
 ];
 
 // Define how many records per page
 $records_per_page = 10;
 
 // Retrieve and sanitize POST parameters
-$mainSearch = trim($_POST['mainSearch'] ?? '');
-$client = trim($_POST['client'] ?? '');
-$jobNumber = trim($_POST['jobNumber'] ?? '');
-$year = trim($_POST['year'] ?? '');
-$typeOfWork = trim($_POST['typeOfWork'] ?? '');
-$fromDate = trim($_POST['fromDate'] ?? '');
-$toDate = trim($_POST['toDate'] ?? '');
-$page = isset($_POST['page']) && is_numeric($_POST['page']) ? (int)$_POST['page'] : 1;
+$mainSearch   = trim($_POST['mainSearch'] ?? '');
+$client       = trim($_POST['client'] ?? '');
+$jobNumber    = trim($_POST['jobNumber'] ?? '');
+$year         = trim($_POST['year'] ?? '');
+$typeOfWork   = trim($_POST['typeOfWork'] ?? '');
+$fromDate     = trim($_POST['fromDate'] ?? '');
+$toDate       = trim($_POST['toDate'] ?? '');
+$page         = isset($_POST['page']) && is_numeric($_POST['page']) ? (int)$_POST['page'] : 1;
 
 // Initialize query parts
 $where = [];
@@ -28,7 +29,14 @@ $params = [];
 
 // Apply filters
 if (!empty($mainSearch)) {
-    $where[] = "(Year LIKE :mainSearch OR Month LIKE :mainSearch OR DTJobNumber LIKE :mainSearch OR HOJobNumber LIKE :mainSearch OR Client LIKE :mainSearch OR DescriptionOfWork LIKE :mainSearch OR TypeOfWork LIKE :mainSearch OR Remarks LIKE :mainSearch)";
+    $where[] = "(Year LIKE :mainSearch OR 
+                Month LIKE :mainSearch OR 
+                DTJobNumber LIKE :mainSearch OR 
+                HOJobNumber LIKE :mainSearch OR 
+                Client LIKE :mainSearch OR 
+                DescriptionOfWork LIKE :mainSearch OR 
+                TypeOfWork LIKE :mainSearch OR 
+                Remarks LIKE :mainSearch)";
     $params[':mainSearch'] = '%' . $mainSearch . '%';
 }
 
@@ -76,6 +84,7 @@ try {
     $total_records = $countStmt->fetchColumn();
 } catch (PDOException $e) {
     // Handle error appropriately
+    $response['message'] = "Database Error: " . $e->getMessage();
     echo json_encode($response);
     exit();
 }
@@ -89,7 +98,10 @@ $offset = ($page - 1) * $records_per_page;
 // Fetch the relevant records
 try {
     // Modified ORDER BY to sort months numerically
-    $dataQuery = "SELECT * FROM jayantha_1500_table $whereClause ORDER BY Year ASC, MONTH(STR_TO_DATE(Month, '%M')) ASC LIMIT :limit OFFSET :offset";
+    $dataQuery = "SELECT sr_no, Year, Month, DTJobNumber, HOJobNumber, Client, DateOpened, DescriptionOfWork, TARGET_DATE, CompletionDate, DeliveredDate, FileClosed, LabourHours, MaterialCost, TypeOfWork, Remarks 
+                 FROM jayantha_1500_table $whereClause 
+                 ORDER BY Year ASC, MONTH(STR_TO_DATE(Month, '%M')) ASC 
+                 LIMIT :limit OFFSET :offset";
     $dataStmt = $pdo->prepare($dataQuery);
 
     // Bind parameters
@@ -100,12 +112,15 @@ try {
     $dataStmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
     $dataStmt->execute();
-    $jobs = $dataStmt->fetchAll();
+    $jobs = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     // Handle error appropriately
+    $response['message'] = "Database Error: " . $e->getMessage();
     echo json_encode($response);
     exit();
 }
+
+// No mapping needed; FileClosed is already "Yes" or "No"
 
 // Group the data by Year and then by Month
 $groupedData = [];

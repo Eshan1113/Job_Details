@@ -1,109 +1,88 @@
 <?php
-// edit_job.php
-
 session_start();
-header('Content-Type: application/json');
+include('db_conn.php');
 
-if (!isset($_SESSION['username'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access. Please log in.']);
+// Initialize response array
+$response = [
+    'success' => false,
+    'message' => ''
+];
+
+// Retrieve and sanitize POST parameters
+$sr_no = isset($_POST['sr_no']) ? (int)$_POST['sr_no'] : 0;
+$year = isset($_POST['Year']) ? trim($_POST['Year']) : '';
+$month = isset($_POST['Month']) ? trim($_POST['Month']) : '';
+$dtJobNumber = isset($_POST['DTJobNumber']) ? trim($_POST['DTJobNumber']) : '';
+$hoJobNumber = isset($_POST['HOJobNumber']) ? trim($_POST['HOJobNumber']) : '';
+$client = isset($_POST['Client']) ? trim($_POST['Client']) : '';
+$dateOpened = isset($_POST['DateOpened']) ? trim($_POST['DateOpened']) : '';
+$descriptionOfWork = isset($_POST['DescriptionOfWork']) ? trim($_POST['DescriptionOfWork']) : '';
+$targetDate = isset($_POST['TARGET_DATE']) ? trim($_POST['TARGET_DATE']) : '';
+$completionDate = isset($_POST['CompletionDate']) ? trim($_POST['CompletionDate']) : '';
+$deliveredDate = isset($_POST['DeliveredDate']) ? trim($_POST['DeliveredDate']) : '';
+$fileClosed = isset($_POST['FileClosed']) ? trim($_POST['FileClosed']) : 'No'; // Default to 'No' if not set
+$labourHours = isset($_POST['LabourHours']) ? trim($_POST['LabourHours']) : '';
+$materialCost = isset($_POST['MaterialCost']) ? trim($_POST['MaterialCost']) : '';
+$typeOfWork = isset($_POST['TypeOfWork']) ? trim($_POST['TypeOfWork']) : '';
+$remarks = isset($_POST['Remarks']) ? trim($_POST['Remarks']) : '';
+
+// Basic validation
+if ($sr_no <= 0 || empty($year) || empty($month) || empty($dtJobNumber) || empty($client) || empty($dateOpened) || empty($descriptionOfWork) || empty($targetDate)) {
+    $response['message'] = 'Please fill in all required fields.';
+    echo json_encode($response);
     exit();
 }
 
-include('db_conn.php'); // Database connection
-
-// Retrieve and sanitize POST parameters
-$sr_no            = isset($_POST['sr_no']) ? (int)$_POST['sr_no'] : 0;
-$Year             = isset($_POST['Year']) ? sanitize($_POST['Year']) : null;
-$Month            = isset($_POST['Month']) ? sanitize($_POST['Month']) : null;
-$DTJobNumber      = isset($_POST['DTJobNumber']) ? sanitize($_POST['DTJobNumber']) : null;
-$HOJobNumber      = isset($_POST['HOJobNumber']) ? sanitize($_POST['HOJobNumber']) : null;
-$Client           = isset($_POST['Client']) ? sanitize($_POST['Client']) : null;
-$DateOpened       = isset($_POST['DateOpened']) ? sanitize($_POST['DateOpened']) : null;
-$DescriptionOfWork = isset($_POST['DescriptionOfWork']) ? sanitize($_POST['DescriptionOfWork']) : null;
-$TARGET_DATE      = isset($_POST['TARGET_DATE']) ? sanitize($_POST['TARGET_DATE']) : null;
-$CompletionDate   = isset($_POST['CompletionDate']) ? sanitize($_POST['CompletionDate']) : null;
-$DeliveredDate    = isset($_POST['DeliveredDate']) ? sanitize($_POST['DeliveredDate']) : null;
-$FileClosed       = isset($_POST['FileClosed']) ? sanitize($_POST['FileClosed']) : null;
-$LabourHours      = isset($_POST['LabourHours']) ? sanitize($_POST['LabourHours']) : null;
-$MaterialCost     = isset($_POST['MaterialCost']) ? sanitize($_POST['MaterialCost']) : null;
-$TypeOfWork       = isset($_POST['TypeOfWork']) ? sanitize($_POST['TypeOfWork']) : null;
-$Remarks          = isset($_POST['Remarks']) ? sanitize($_POST['Remarks']) : null;
-
-// Function to sanitize input data
-function sanitize($data) {
-    return htmlspecialchars(strip_tags(trim($data)));
-}
-
-// Validate required fields
-$required_fields = ['sr_no', 'Year', 'Month', 'DTJobNumber', 'Client', 'DateOpened', 'DescriptionOfWork', 'TARGET_DATE'];
-foreach ($required_fields as $field) {
-    if (empty($$field)) {
-        echo json_encode(['success' => false, 'message' => "The field $field is required."]);
-        exit();
-    }
-}
+// Ensure FileClosed is either 'Yes' or 'No'
+$fileClosed = (strtolower($fileClosed) === 'yes') ? 'Yes' : 'No';
 
 try {
-    $updateQuery = "UPDATE jayantha_1500_table SET
-        Year = :Year,
-        Month = :Month,
-        DTJobNumber = :DTJobNumber,
-        HOJobNumber = :HOJobNumber,
-        Client = :Client,
-        DateOpened = :DateOpened,
-        DescriptionOfWork = :DescriptionOfWork,
-        TARGET_DATE = :TARGET_DATE,
-        CompletionDate = :CompletionDate,
-        DeliveredDate = :DeliveredDate,
-        FileClosed = :FileClosed,
-        LabourHours = :LabourHours,
-        MaterialCost = :MaterialCost,
-        TypeOfWork = :TypeOfWork,
-        Remarks = :Remarks
-        WHERE sr_no = :sr_no";
+    $updateQuery = "UPDATE jayantha_1500_table SET 
+                    Year = :year,
+                    Month = :month,
+                    DTJobNumber = :dtJobNumber,
+                    HOJobNumber = :hoJobNumber,
+                    Client = :client,
+                    DateOpened = :dateOpened,
+                    DescriptionOfWork = :descriptionOfWork,
+                    TARGET_DATE = :targetDate,
+                    CompletionDate = :completionDate,
+                    DeliveredDate = :deliveredDate,
+                    FileClosed = :fileClosed,
+                    LabourHours = :labourHours,
+                    MaterialCost = :materialCost,
+                    TypeOfWork = :typeOfWork,
+                    Remarks = :remarks
+                    WHERE sr_no = :sr_no";
 
     $stmt = $pdo->prepare($updateQuery);
-
-    // Bind parameters with appropriate data types
-    $stmt->bindParam(':Year', $Year, PDO::PARAM_INT);
-    $stmt->bindParam(':Month', $Month, PDO::PARAM_STR);
-    $stmt->bindParam(':DTJobNumber', $DTJobNumber, PDO::PARAM_STR);
-    $stmt->bindParam(':HOJobNumber', $HOJobNumber, PDO::PARAM_STR);
-    $stmt->bindParam(':Client', $Client, PDO::PARAM_STR);
-    $stmt->bindParam(':DateOpened', $DateOpened, PDO::PARAM_STR);
-    $stmt->bindParam(':DescriptionOfWork', $DescriptionOfWork, PDO::PARAM_STR);
-    $stmt->bindParam(':TARGET_DATE', $TARGET_DATE, PDO::PARAM_STR);
-
-    // Handle CompletionDate: set to NULL if empty
-    if (!empty($CompletionDate)) {
-        $stmt->bindParam(':CompletionDate', $CompletionDate, PDO::PARAM_STR);
-    } else {
-        $stmt->bindValue(':CompletionDate', null, PDO::PARAM_NULL);
-    }
-
-    // Handle DeliveredDate: set to NULL if empty
-    if (!empty($DeliveredDate)) {
-        $stmt->bindParam(':DeliveredDate', $DeliveredDate, PDO::PARAM_STR);
-    } else {
-        $stmt->bindValue(':DeliveredDate', null, PDO::PARAM_NULL);
-    }
-
-    $stmt->bindParam(':FileClosed', $FileClosed, PDO::PARAM_INT);
-    $stmt->bindParam(':LabourHours', $LabourHours, PDO::PARAM_STR);
-    $stmt->bindParam(':MaterialCost', $MaterialCost, PDO::PARAM_STR);
-    $stmt->bindParam(':TypeOfWork', $TypeOfWork, PDO::PARAM_STR);
-    $stmt->bindParam(':Remarks', $Remarks, PDO::PARAM_STR);
+    $stmt->bindParam(':year', $year, PDO::PARAM_STR);
+    $stmt->bindParam(':month', $month, PDO::PARAM_STR);
+    $stmt->bindParam(':dtJobNumber', $dtJobNumber, PDO::PARAM_STR);
+    $stmt->bindParam(':hoJobNumber', $hoJobNumber, PDO::PARAM_STR);
+    $stmt->bindParam(':client', $client, PDO::PARAM_STR);
+    $stmt->bindParam(':dateOpened', $dateOpened, PDO::PARAM_STR);
+    $stmt->bindParam(':descriptionOfWork', $descriptionOfWork, PDO::PARAM_STR);
+    $stmt->bindParam(':targetDate', $targetDate, PDO::PARAM_STR);
+    $stmt->bindParam(':completionDate', $completionDate, PDO::PARAM_STR);
+    $stmt->bindParam(':deliveredDate', $deliveredDate, PDO::PARAM_STR);
+    $stmt->bindParam(':fileClosed', $fileClosed, PDO::PARAM_STR);
+    $stmt->bindParam(':labourHours', $labourHours, PDO::PARAM_STR);
+    $stmt->bindParam(':materialCost', $materialCost, PDO::PARAM_STR);
+    $stmt->bindParam(':typeOfWork', $typeOfWork, PDO::PARAM_STR);
+    $stmt->bindParam(':remarks', $remarks, PDO::PARAM_STR);
     $stmt->bindParam(':sr_no', $sr_no, PDO::PARAM_INT);
 
-    if($stmt->execute()){
-        echo json_encode(['success' => true, 'message' => "Record updated successfully."]);
+    if ($stmt->execute()) {
+        $response['success'] = true;
+        $response['message'] = 'Job details updated successfully.';
     } else {
-        $errorInfo = $stmt->errorInfo();
-        echo json_encode(['success' => false, 'message' => "Failed to update the record. SQL Error: " . $errorInfo[2]]);
+        $response['message'] = 'Failed to update job details.';
     }
 } catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => "Database Error: " . $e->getMessage()]);
+    $response['message'] = "Database Error: " . $e->getMessage();
 }
 
+echo json_encode($response);
 exit();
 ?>
