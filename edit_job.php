@@ -1,4 +1,5 @@
 <?php
+// edit_job.php
 session_start();
 include('db_conn.php');
 
@@ -27,10 +28,13 @@ $typeOfWork = isset($_POST['TypeOfWork']) ? trim($_POST['TypeOfWork']) : '';
 $remarks = isset($_POST['Remarks']) ? trim($_POST['Remarks']) : '';
 
 // Basic validation
-if ($sr_no <= 0 || empty($year) || empty($month) || empty($dtJobNumber) || empty($client) || empty($dateOpened) || empty($descriptionOfWork) || empty($targetDate)) {
-    $response['message'] = 'Please fill in all required fields.';
-    echo json_encode($response);
-    exit();
+$requiredFields = ['sr_no', 'Year', 'Month', 'DTJobNumber', 'Client', 'DateOpened', 'DescriptionOfWork', 'TARGET_DATE'];
+foreach ($requiredFields as $field) {
+    if (empty($_POST[$field])) {
+        $response['message'] = 'Please fill in all required fields.';
+        echo json_encode($response);
+        exit();
+    }
 }
 
 // Ensure FileClosed is either 'Yes' or 'No'
@@ -56,7 +60,7 @@ try {
                     WHERE sr_no = :sr_no";
 
     $stmt = $pdo->prepare($updateQuery);
-    $stmt->bindParam(':year', $year, PDO::PARAM_STR);
+    $stmt->bindParam(':year', $year, PDO::PARAM_INT);
     $stmt->bindParam(':month', $month, PDO::PARAM_STR);
     $stmt->bindParam(':dtJobNumber', $dtJobNumber, PDO::PARAM_STR);
     $stmt->bindParam(':hoJobNumber', $hoJobNumber, PDO::PARAM_STR);

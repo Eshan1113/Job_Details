@@ -1,4 +1,5 @@
 <?php
+// get_job.php
 session_start();
 include('db_conn.php');
 
@@ -28,9 +29,6 @@ try {
     $job = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($job) {
-        // FileClosed is already "Yes" or "No"
-        // No mapping needed
-
         $response['success'] = true;
         $response['data'] = $job;
     } else {

@@ -1,4 +1,5 @@
 <?php
+// search.php
 session_start();
 include('db_conn.php');
 
@@ -10,160 +11,122 @@ $response = [
     'message' => ''
 ];
 
-// Define how many records per page
-$records_per_page = 10;
-
 // Retrieve and sanitize POST parameters
-$mainSearch   = trim($_POST['mainSearch'] ?? '');
-$client       = trim($_POST['client'] ?? '');
-$jobNumber    = trim($_POST['jobNumber'] ?? '');
-$year         = trim($_POST['year'] ?? '');
-$typeOfWork   = trim($_POST['typeOfWork'] ?? '');
-$fromDate     = trim($_POST['fromDate'] ?? '');
-$toDate       = trim($_POST['toDate'] ?? '');
-$page         = isset($_POST['page']) && is_numeric($_POST['page']) ? (int)$_POST['page'] : 1;
+$mainSearch = isset($_POST['mainSearch']) ? trim($_POST['mainSearch']) : '';
+$client = isset($_POST['client']) ? trim($_POST['client']) : '';
+$jobNumber = isset($_POST['jobNumber']) ? trim($_POST['jobNumber']) : '';
+$year = isset($_POST['year']) ? trim($_POST['year']) : '';
+$typeOfWork = isset($_POST['typeOfWork']) ? trim($_POST['typeOfWork']) : '';
+$fromDate = isset($_POST['fromDate']) ? trim($_POST['fromDate']) : '';
+$toDate = isset($_POST['toDate']) ? trim($_POST['toDate']) : '';
+$page = isset($_POST['page']) && is_numeric($_POST['page']) ? (int)$_POST['page'] : 1;
+$recordsPerPage = 20;
+$offset = ($page - 1) * $recordsPerPage;
 
-// Initialize query parts
-$where = [];
+// Build the WHERE clause based on filters
+$whereClauses = [];
 $params = [];
 
-// Apply filters
+// Main search (searches multiple fields)
 if (!empty($mainSearch)) {
-    $where[] = "(Year LIKE :mainSearch OR 
-                Month LIKE :mainSearch OR 
-                DTJobNumber LIKE :mainSearch OR 
-                HOJobNumber LIKE :mainSearch OR 
-                Client LIKE :mainSearch OR 
-                DescriptionOfWork LIKE :mainSearch OR 
-                TypeOfWork LIKE :mainSearch OR 
-                Remarks LIKE :mainSearch)";
+    $whereClauses[] = "(Year LIKE :mainSearch OR 
+                        Month LIKE :mainSearch OR 
+                        DTJobNumber LIKE :mainSearch OR 
+                        HOJobNumber LIKE :mainSearch OR 
+                        Client LIKE :mainSearch OR 
+                        DescriptionOfWork LIKE :mainSearch OR 
+                        TypeOfWork LIKE :mainSearch OR 
+                        Remarks LIKE :mainSearch)";
     $params[':mainSearch'] = '%' . $mainSearch . '%';
 }
 
+// Client filter
 if (!empty($client)) {
-    $where[] = "Client = :client";
+    $whereClauses[] = "Client = :client";
     $params[':client'] = $client;
 }
 
+// DT Job Number filter
 if (!empty($jobNumber)) {
-    $where[] = "DTJobNumber = :jobNumber";
+    $whereClauses[] = "DTJobNumber = :jobNumber";
     $params[':jobNumber'] = $jobNumber;
 }
 
+// Year filter
 if (!empty($year)) {
-    $where[] = "Year = :year";
+    $whereClauses[] = "Year = :year";
     $params[':year'] = $year;
 }
 
+// Type of Work filter
 if (!empty($typeOfWork)) {
-    $where[] = "TypeOfWork = :typeOfWork";
+    $whereClauses[] = "TypeOfWork = :typeOfWork";
     $params[':typeOfWork'] = $typeOfWork;
 }
 
+// Date range filter
 if (!empty($fromDate)) {
-    $where[] = "DateOpened >= :fromDate";
+    $whereClauses[] = "DateOpened >= :fromDate";
     $params[':fromDate'] = $fromDate;
 }
-
 if (!empty($toDate)) {
-    $where[] = "DateOpened <= :toDate";
+    $whereClauses[] = "DateOpened <= :toDate";
     $params[':toDate'] = $toDate;
 }
 
-// Build the WHERE clause
-$whereClause = '';
-if (!empty($where)) {
-    $whereClause = 'WHERE ' . implode(' AND ', $where);
+// Combine WHERE clauses
+$whereSQL = '';
+if (count($whereClauses) > 0) {
+    $whereSQL = 'WHERE ' . implode(' AND ', $whereClauses);
 }
 
-// Count total records for pagination
 try {
-    $countQuery = "SELECT COUNT(*) FROM jayantha_1500_table $whereClause";
+    // Get total records for pagination
+    $countQuery = "SELECT COUNT(*) FROM jayantha_1500_table $whereSQL";
     $countStmt = $pdo->prepare($countQuery);
-    $countStmt->execute($params);
-    $total_records = $countStmt->fetchColumn();
-} catch (PDOException $e) {
-    // Handle error appropriately
-    $response['message'] = "Database Error: " . $e->getMessage();
-    echo json_encode($response);
-    exit();
-}
+    foreach ($params as $key => &$val) {
+        $countStmt->bindParam($key, $val);
+    }
+    $countStmt->execute();
+    $totalRecords = $countStmt->fetchColumn();
+    $totalPages = ceil($totalRecords / $recordsPerPage);
 
-// Calculate pagination
-$total_pages = ceil($total_records / $records_per_page);
-$page = max($page, 1);
-$page = min($page, $total_pages);
-$offset = ($page - 1) * $records_per_page;
-
-// Fetch the relevant records
-try {
-    // Modified ORDER BY to sort months numerically
-    $dataQuery = "SELECT sr_no, Year, Month, DTJobNumber, HOJobNumber, Client, DateOpened, DescriptionOfWork, TARGET_DATE, CompletionDate, DeliveredDate, FileClosed, LabourHours, MaterialCost, TypeOfWork, Remarks 
-                 FROM jayantha_1500_table $whereClause 
-                 ORDER BY Year ASC, MONTH(STR_TO_DATE(Month, '%M')) ASC 
-                 LIMIT :limit OFFSET :offset";
+    // Fetch the filtered data with pagination
+    $dataQuery = "SELECT * FROM jayantha_1500_table $whereSQL ORDER BY Year ASC, MONTH(STR_TO_DATE(Month, '%M')) ASC, Month ASC LIMIT :limit OFFSET :offset";
     $dataStmt = $pdo->prepare($dataQuery);
-
-    // Bind parameters
+    
+    // Bind the parameters
     foreach ($params as $key => &$val) {
         $dataStmt->bindParam($key, $val);
     }
-    $dataStmt->bindValue(':limit', $records_per_page, PDO::PARAM_INT);
-    $dataStmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
+    $dataStmt->bindParam(':limit', $recordsPerPage, PDO::PARAM_INT);
+    $dataStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $dataStmt->execute();
-    $jobs = $dataStmt->fetchAll(PDO::FETCH_ASSOC);
+    $jobs = $dataStmt->fetchAll();
+
+    // Group data by Year and then by Month
+    $groupedData = [];
+    foreach ($jobs as $job) {
+        $groupedData[$job['Year']][$job['Month']][] = $job;
+    }
+
+    // Generate pagination HTML
+    $paginationHTML = '';
+    if ($totalPages > 1) {
+        $paginationHTML .= '<button class="pagination-link prev ' . ($page <= 1 ? 'disabled' : '') . '" data-page="' . ($page - 1) . '">Previous</button>';
+        // Optionally, add page numbers here
+        $paginationHTML .= '<span class="mx-2">Page ' . $page . ' of ' . $totalPages . '</span>';
+        $paginationHTML .= '<button class="pagination-link next ' . ($page >= $totalPages ? 'disabled' : '') . '" data-page="' . ($page + 1) . '">Next</button>';
+    }
+
+    $response['success'] = true;
+    $response['groupedData'] = $groupedData;
+    $response['pagination'] = $paginationHTML;
+
 } catch (PDOException $e) {
-    // Handle error appropriately
     $response['message'] = "Database Error: " . $e->getMessage();
-    echo json_encode($response);
-    exit();
 }
 
-// No mapping needed; FileClosed is already "Yes" or "No"
-
-// Group the data by Year and then by Month
-$groupedData = [];
-foreach ($jobs as $job) {
-    $jobYear = $job['Year'];
-    $jobMonth = $job['Month'];
-
-    if (!isset($groupedData[$jobYear])) {
-        $groupedData[$jobYear] = [];
-    }
-
-    if (!isset($groupedData[$jobYear][$jobMonth])) {
-        $groupedData[$jobYear][$jobMonth] = [];
-    }
-
-    $groupedData[$jobYear][$jobMonth][] = $job;
-}
-
-// Generate "Previous" and "Next" buttons
-$pagination = '';
-
-// Previous Button
-if ($page > 1) {
-    $prevPage = $page - 1;
-    $pagination .= '<button class="pagination-link prev" data-page="' . $prevPage . '">Previous</button>';
-} else {
-    $pagination .= '<button class="pagination-link prev" disabled>Previous</button>';
-}
-
-// Next Button
-if ($page < $total_pages) {
-    $nextPage = $page + 1;
-    $pagination .= '<button class="pagination-link next" data-page="' . $nextPage . '">Next</button>';
-} else {
-    $pagination .= '<button class="pagination-link next" disabled>Next</button>';
-}
-
-// Populate the response
-$response['success'] = true;
-$response['groupedData'] = $groupedData;
-$response['pagination'] = $pagination;
-
-// Return the response as JSON
 echo json_encode($response);
 exit();
 ?>
