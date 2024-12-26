@@ -55,20 +55,12 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-    <!-- Font Awesome CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
-    <!-- Select2 CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Select2 JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="css/tailwind.min.css" rel="stylesheet">
+<link href="css/all.min.css" rel="stylesheet">
+<link href="css/all.min.css" rel="stylesheet">
+ <link href="css/select2.min.css" rel="stylesheet" />
+<script src="css/jquery-3.6.0.min.js"></script>
+<script src="css/select2.min.js"></script>
 
     <style>
         /* Existing CSS styles */
@@ -179,6 +171,11 @@ try {
         .save-button:hover {
             background-color: #0056b3;
         }
+        /* Totals Div Styles */
+        .totals span {
+            font-size: 1rem;
+            margin-right: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -252,6 +249,12 @@ try {
             <label for="toDate" class="text-sm font-semibold text-gray-700">To:</label>
             <input type="date" id="toDate" placeholder="To Date" class="p-2 border rounded">
         </div>
+    </div>
+
+    <!-- Display Totals -->
+    <div class="totals mb-4 flex justify-between items-center">
+        <span id="totalRecords" class="font-semibold">Total Records: 0</span>
+      
     </div>
 
     <!-- Table wrapper -->
@@ -496,9 +499,18 @@ $(document).ready(function() {
                     });
                     $('#jobTable').html(tableHtml);
                     $('#pagination').html(response.pagination);
+
+                    // Totals update කිරීම
+                    $('#totalRecords').text('Total Records: ' + response.totalRecords);
+                    $('#totalLabourHours').text('Total Labour Hours: ' + (response.totalLabourHours || 0));
+                    $('#totalMaterialCost').text('Total Material Cost: ' + (response.totalMaterialCost || 0));
                 } else {
                     $('#jobTable').html('<tr><td colspan="16" class="text-center text-red-500">' + escapeHtml(response.message || 'Error loading data.') + '</td></tr>');
                     $('#pagination').html('');
+                    // Totals reset කිරීම
+                    $('#totalRecords').text('Total Records: 0');
+                    $('#totalLabourHours').text('Total Labour Hours: 0');
+                    $('#totalMaterialCost').text('Total Material Cost: 0');
                 }
             },
             dataType: 'json',
@@ -506,6 +518,10 @@ $(document).ready(function() {
                 console.error('AJAX Error:', status, error);
                 $('#jobTable').html('<tr><td colspan="16" class="text-center text-red-500">An error occurred while loading data.</td></tr>');
                 $('#pagination').html('');
+                // Totals reset කිරීම
+                $('#totalRecords').text('Total Records: 0');
+                $('#totalLabourHours').text('Total Labour Hours: 0');
+                $('#totalMaterialCost').text('Total Material Cost: 0');
             }
         });
     }

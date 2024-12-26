@@ -1,5 +1,11 @@
 <?php
 // search.php
+
+// Enable error reporting for debugging (disable in production)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 include('db_conn.php');
 
@@ -8,6 +14,9 @@ $response = [
     'success' => false,
     'groupedData' => [],
     'pagination' => '',
+    'totalRecords' => 0,
+    'totalLabourHours' => 0,
+    'totalMaterialCost' => 0,
     'message' => ''
 ];
 
@@ -81,18 +90,29 @@ if (count($whereClauses) > 0) {
 }
 
 try {
-    // Get total records for pagination
-    $countQuery = "SELECT COUNT(*) FROM jayantha_1500_table $whereSQL";
+    // Get total records and aggregated totals for pagination and display
+    $countQuery = "SELECT COUNT(*) as total, 
+                          SUM(LabourHours) as totalLabourHours, 
+                          SUM(MaterialCost) as totalMaterialCost 
+                   FROM jayantha_1500_table $whereSQL";
     $countStmt = $pdo->prepare($countQuery);
     foreach ($params as $key => &$val) {
         $countStmt->bindParam($key, $val);
     }
     $countStmt->execute();
-    $totalRecords = $countStmt->fetchColumn();
+    $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+    $totalRecords = $countResult['total'] ?? 0;
+    $totalLabourHours = $countResult['totalLabourHours'] ?? 0;
+    $totalMaterialCost = $countResult['totalMaterialCost'] ?? 0;
     $totalPages = ceil($totalRecords / $recordsPerPage);
 
     // Fetch the filtered data with pagination
-    $dataQuery = "SELECT * FROM jayantha_1500_table $whereSQL ORDER BY Year ASC, MONTH(STR_TO_DATE(Month, '%M')) ASC, Month ASC LIMIT :limit OFFSET :offset";
+    $dataQuery = "SELECT * FROM jayantha_1500_table $whereSQL ORDER BY Year ASC, 
+                                  CASE 
+                                      WHEN Month REGEXP '^[0-9]+$' THEN CAST(Month AS UNSIGNED)
+                                      ELSE MONTH(STR_TO_DATE(Month, '%M'))
+                                  END ASC, 
+                                  Month ASC LIMIT :limit OFFSET :offset";
     $dataStmt = $pdo->prepare($dataQuery);
     
     // Bind the parameters
@@ -119,9 +139,13 @@ try {
         $paginationHTML .= '<button class="pagination-link next ' . ($page >= $totalPages ? 'disabled' : '') . '" data-page="' . ($page + 1) . '">Next</button>';
     }
 
+    // Populate response
     $response['success'] = true;
     $response['groupedData'] = $groupedData;
     $response['pagination'] = $paginationHTML;
+    $response['totalRecords'] = $totalRecords;
+    $response['totalLabourHours'] = $totalLabourHours;
+    $response['totalMaterialCost'] = $totalMaterialCost;
 
 } catch (PDOException $e) {
     $response['message'] = "Database Error: " . $e->getMessage();
