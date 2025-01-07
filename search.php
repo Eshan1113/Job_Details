@@ -28,6 +28,8 @@ $year = isset($_POST['year']) ? trim($_POST['year']) : '';
 $typeOfWork = isset($_POST['typeOfWork']) ? trim($_POST['typeOfWork']) : '';
 $fromDate = isset($_POST['fromDate']) ? trim($_POST['fromDate']) : '';
 $toDate = isset($_POST['toDate']) ? trim($_POST['toDate']) : '';
+$labourHoursSearch = isset($_POST['labourHoursSearch']) ? trim($_POST['labourHoursSearch']) : '';
+$materialCostSearch = isset($_POST['materialCostSearch']) ? trim($_POST['materialCostSearch']) : '';
 $page = isset($_POST['page']) && is_numeric($_POST['page']) ? (int)$_POST['page'] : 1;
 $recordsPerPage = 20;
 $offset = ($page - 1) * $recordsPerPage;
@@ -81,6 +83,18 @@ if (!empty($fromDate)) {
 if (!empty($toDate)) {
     $whereClauses[] = "DateOpened <= :toDate";
     $params[':toDate'] = $toDate;
+}
+
+// Labour Hours filter
+if ($labourHoursSearch !== '') {
+    $whereClauses[] = "LabourHours = :labourHoursSearch";
+    $params[':labourHoursSearch'] = $labourHoursSearch;
+}
+
+// Material Cost filter
+if ($materialCostSearch !== '') {
+    $whereClauses[] = "MaterialCost = :materialCostSearch";
+    $params[':materialCostSearch'] = $materialCostSearch;
 }
 
 // Combine WHERE clauses

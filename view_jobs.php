@@ -56,11 +56,10 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Job Details</title>
     <link href="css/tailwind.min.css" rel="stylesheet">
-<link href="css/all.min.css" rel="stylesheet">
-<link href="css/all.min.css" rel="stylesheet">
- <link href="css/select2.min.css" rel="stylesheet" />
-<script src="css/jquery-3.6.0.min.js"></script>
-<script src="css/select2.min.js"></script>
+    <link href="css/all.min.css" rel="stylesheet">
+    <link href="css/select2.min.css" rel="stylesheet" />
+    <script src="css/jquery-3.6.0.min.js"></script>
+    <script src="css/select2.min.js"></script>
 
     <style>
         /* Existing CSS styles */
@@ -240,21 +239,24 @@ try {
             <?php endforeach; ?>
         </select>
 
-        <!-- Date Range Filters -->
-        <div class="flex items-center gap-2">
-            <label for="fromDate" class="text-sm font-semibold text-gray-700">From:</label>
-            <input type="date" id="fromDate" placeholder="From Date" class="p-2 border rounded">
+        <!-- Labour Hours Filter -->
+        <div class="flex flex-col gap-1">
+            <label for="labourHoursSearch" class="text-sm font-semibold text-gray-700">Labour Hours:</label>
+            <input type="number" id="labourHoursSearch" placeholder="Enter Labour Hours" class="p-2 border rounded" min="0">
         </div>
-        <div class="flex items-center gap-2">
-            <label for="toDate" class="text-sm font-semibold text-gray-700">To:</label>
-            <input type="date" id="toDate" placeholder="To Date" class="p-2 border rounded">
+
+        <!-- Material Cost Filter -->
+        <div class="flex flex-col gap-1">
+            <label for="materialCostSearch" class="text-sm font-semibold text-gray-700">Material Cost (Rs.):</label>
+            <input type="number" id="materialCostSearch" placeholder="Enter Material Cost" class="p-2 border rounded" min="0" step="0.01">
         </div>
     </div>
 
     <!-- Display Totals -->
-    <div class="totals mb-4 flex justify-between items-center">
+    <div class="totals mb-4 flex flex-wrap gap-4">
         <span id="totalRecords" class="font-semibold">Total Records: 0</span>
-      
+        <span id="totalLabourHours" class="font-semibold">Total Labour Hours: 0</span>
+        <span id="totalMaterialCost" class="font-semibold">Total Material Cost: Rs.0</span>
     </div>
 
     <!-- Table wrapper -->
@@ -395,11 +397,11 @@ try {
                 </div>
                 <div>
                     <label for="editLabourHours" class="block text-sm font-medium text-gray-700">Labour Hours</label>
-                    <input type="text" id="editLabourHours" name="LabourHours" class="mt-1 p-2 border rounded w-full">
+                    <input type="number" id="editLabourHours" name="LabourHours" class="mt-1 p-2 border rounded w-full" min="0" step="0.1">
                 </div>
                 <div>
-                    <label for="editMaterialCost" class="block text-sm font-medium text-gray-700">Material Cost</label>
-                    <input type="text" id="editMaterialCost" name="MaterialCost" class="mt-1 p-2 border rounded w-full">
+                    <label for="editMaterialCost" class="block text-sm font-medium text-gray-700">Material Cost (Rs.):</label>
+                    <input type="number" id="editMaterialCost" name="MaterialCost" class="mt-1 p-2 border rounded w-full" min="0" step="0.01">
                 </div>
                 <div>
                     <label for="editTypeOfWork" class="block text-sm font-medium text-gray-700">Type of Work</label>
@@ -451,6 +453,8 @@ $(document).ready(function() {
         var typeOfWork = $('#typeOfWorkSearch').val();
         var fromDate = $('#fromDate').val();
         var toDate = $('#toDate').val();
+        var labourHoursSearch = $('#labourHoursSearch').val();
+        var materialCostSearch = $('#materialCostSearch').val();
 
         $.ajax({
             url: 'search.php',
@@ -463,6 +467,8 @@ $(document).ready(function() {
                 typeOfWork: typeOfWork,
                 fromDate: fromDate,
                 toDate: toDate,
+                labourHoursSearch: labourHoursSearch,
+                materialCostSearch: materialCostSearch,
                 page: page
             },
             success: function(response) {
@@ -486,7 +492,7 @@ $(document).ready(function() {
                                 tableHtml += '<td class="px-2 py-1 border-b text-sm hidden lg:table-cell">' + (job.DeliveredDate ? escapeHtml(job.DeliveredDate) : 'N/A') + '</td>';
                                 tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + escapeHtml(job.FileClosed) + '</td>'; // Display as "Yes" or "No"
                                 tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + escapeHtml(job.LabourHours) + '</td>';
-                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + escapeHtml(job.MaterialCost) + '</td>';
+                                tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">Rs.' + escapeHtml(job.MaterialCost) + '</td>';
                                 tableHtml += '<td class="px-2 py-1 border-b text-sm">' + (job.TypeOfWork ? escapeHtml(job.TypeOfWork) : 'N/A') + '</td>';
                                 tableHtml += '<td class="px-2 py-1 border-b text-sm hidden md:table-cell">' + (job.Remarks ? escapeHtml(job.Remarks) : 'N/A') + '</td>';
                                 // Add Actions column with Edit button
@@ -500,17 +506,17 @@ $(document).ready(function() {
                     $('#jobTable').html(tableHtml);
                     $('#pagination').html(response.pagination);
 
-                    // Totals update කිරීම
+                    // Update Totals
                     $('#totalRecords').text('Total Records: ' + response.totalRecords);
                     $('#totalLabourHours').text('Total Labour Hours: ' + (response.totalLabourHours || 0));
-                    $('#totalMaterialCost').text('Total Material Cost: ' + (response.totalMaterialCost || 0));
+                    $('#totalMaterialCost').text('Total Material Cost: Rs.' + (response.totalMaterialCost || 0));
                 } else {
                     $('#jobTable').html('<tr><td colspan="16" class="text-center text-red-500">' + escapeHtml(response.message || 'Error loading data.') + '</td></tr>');
                     $('#pagination').html('');
-                    // Totals reset කිරීම
+                    // Reset Totals
                     $('#totalRecords').text('Total Records: 0');
                     $('#totalLabourHours').text('Total Labour Hours: 0');
-                    $('#totalMaterialCost').text('Total Material Cost: 0');
+                    $('#totalMaterialCost').text('Total Material Cost: Rs.0');
                 }
             },
             dataType: 'json',
@@ -518,10 +524,10 @@ $(document).ready(function() {
                 console.error('AJAX Error:', status, error);
                 $('#jobTable').html('<tr><td colspan="16" class="text-center text-red-500">An error occurred while loading data.</td></tr>');
                 $('#pagination').html('');
-                // Totals reset කිරීම
+                // Reset Totals
                 $('#totalRecords').text('Total Records: 0');
                 $('#totalLabourHours').text('Total Labour Hours: 0');
-                $('#totalMaterialCost').text('Total Material Cost: 0');
+                $('#totalMaterialCost').text('Total Material Cost: Rs.0');
             }
         });
     }
@@ -536,7 +542,7 @@ $(document).ready(function() {
     loadJobs();
 
     // Trigger search on input change or dropdown selection
-    $('#mainSearch, #clientSearch, #jobNumberSearch, #yearSearch, #typeOfWorkSearch, #fromDate, #toDate').on('input change', function() {
+    $('#mainSearch, #clientSearch, #jobNumberSearch, #yearSearch, #typeOfWorkSearch, #fromDate, #toDate, #labourHoursSearch, #materialCostSearch').on('input change', function() {
         loadJobs();
     });
 
@@ -604,6 +610,8 @@ $(document).ready(function() {
         var typeOfWork = $('#typeOfWorkSearch').val();
         var fromDate = $('#fromDate').val();
         var toDate = $('#toDate').val();
+        var labourHoursSearch = $('#labourHoursSearch').val();
+        var materialCostSearch = $('#materialCostSearch').val();
 
         $.ajax({
             url: 'export.php',
@@ -616,7 +624,9 @@ $(document).ready(function() {
                 year: year,
                 typeOfWork: typeOfWork,
                 fromDate: fromDate,
-                toDate: toDate
+                toDate: toDate,
+                labourHoursSearch: labourHoursSearch,
+                materialCostSearch: materialCostSearch
             },
             xhrFields: {
                 responseType: 'blob' // Important for handling binary data
