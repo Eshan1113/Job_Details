@@ -1,0 +1,25 @@
+[08-Jan-2025 08:57:43 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: number_format(): Argument #1 ($num) must be of type float, string given in C:\xampp\htdocs\JobDetails\export.php:184
+Stack trace:
+#0 C:\xampp\htdocs\JobDetails\export.php(184): number_format('1/0/190', 2)
+#1 {main}
+  thrown in C:\xampp\htdocs\JobDetails\export.php on line 184
+[08-Jan-2025 08:58:06 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: number_format(): Argument #1 ($num) must be of type float, string given in C:\xampp\htdocs\JobDetails\export.php:184
+Stack trace:
+#0 C:\xampp\htdocs\JobDetails\export.php(184): number_format('1/0/190', 2)
+#1 {main}
+  thrown in C:\xampp\htdocs\JobDetails\export.php on line 184
+[08-Jan-2025 08:58:09 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: number_format(): Argument #1 ($num) must be of type float, string given in C:\xampp\htdocs\JobDetails\export.php:184
+Stack trace:
+#0 C:\xampp\htdocs\JobDetails\export.php(184): number_format('1/0/190', 2)
+#1 {main}
+  thrown in C:\xampp\htdocs\JobDetails\export.php on line 184
+[08-Jan-2025 08:58:15 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: number_format(): Argument #1 ($num) must be of type float, string given in C:\xampp\htdocs\JobDetails\export.php:184
+Stack trace:
+#0 C:\xampp\htdocs\JobDetails\export.php(184): number_format('1/0/190', 2)
+#1 {main}
+  thrown in C:\xampp\htdocs\JobDetails\export.php on line 184
+[08-Jan-2025 08:58:19 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: number_format(): Argument #1 ($num) must be of type float, string given in C:\xampp\htdocs\JobDetails\export.php:184
+Stack trace:
+#0 C:\xampp\htdocs\JobDetails\export.php(184): number_format('1/0/190', 2)
+#1 {main}
+  thrown in C:\xampp\htdocs\JobDetails\export.php on line 184

@@ -38,6 +38,7 @@ $year = trim($_POST['year'] ?? '');
 $typeOfWork = trim($_POST['typeOfWork'] ?? '');
 $fromDate = trim($_POST['fromDate'] ?? '');
 $toDate = trim($_POST['toDate'] ?? '');
+$remarksSearch = trim($_POST['remarksSearch'] ?? ''); // **New: Remarks Search**
 
 $where = [];
 $params = [];
@@ -83,6 +84,12 @@ if (!empty($fromDate)) {
 if (!empty($toDate)) {
     $where[] = "DateOpened <= :toDate";
     $params[':toDate'] = $toDate;
+}
+
+// **New: Remarks Search Filter**
+if (!empty($remarksSearch)) {
+    $where[] = "Remarks LIKE :remarksSearch";
+    $params[':remarksSearch'] = '%' . $remarksSearch . '%';
 }
 
 // Build the WHERE clause

@@ -30,6 +30,7 @@ $fromDate = isset($_POST['fromDate']) ? trim($_POST['fromDate']) : '';
 $toDate = isset($_POST['toDate']) ? trim($_POST['toDate']) : '';
 $labourHoursSearch = isset($_POST['labourHoursSearch']) ? trim($_POST['labourHoursSearch']) : '';
 $materialCostSearch = isset($_POST['materialCostSearch']) ? trim($_POST['materialCostSearch']) : '';
+$remarksSearch = isset($_POST['remarksSearch']) ? trim($_POST['remarksSearch']) : ''; // **New: Remarks Search**
 $page = isset($_POST['page']) && is_numeric($_POST['page']) ? (int)$_POST['page'] : 1;
 $recordsPerPage = 20;
 $offset = ($page - 1) * $recordsPerPage;
@@ -95,6 +96,12 @@ if ($labourHoursSearch !== '') {
 if ($materialCostSearch !== '') {
     $whereClauses[] = "MaterialCost = :materialCostSearch";
     $params[':materialCostSearch'] = $materialCostSearch;
+}
+
+// **New: Remarks Search Filter**
+if (!empty($remarksSearch)) {
+    $whereClauses[] = "Remarks LIKE :remarksSearch";
+    $params[':remarksSearch'] = '%' . $remarksSearch . '%';
 }
 
 // Combine WHERE clauses

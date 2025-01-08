@@ -1,4 +1,6 @@
 <?php
+// view.php
+
 session_start();
 if (!isset($_SESSION['username'])) {
     header("Location: login.php"); // Redirect to login if not authenticated
@@ -250,6 +252,12 @@ try {
             <label for="materialCostSearch" class="text-sm font-semibold text-gray-700">Material Cost (Rs.):</label>
             <input type="number" id="materialCostSearch" placeholder="Enter Material Cost" class="p-2 border rounded" min="0" step="0.01">
         </div>
+
+        <!-- **New: Remarks Search Filter** -->
+        <div class="flex flex-col gap-1">
+            <label for="remarksSearch" class="text-sm font-semibold text-gray-700">Remarks:</label>
+            <input type="text" id="remarksSearch" placeholder="Search Remarks" class="p-2 border rounded w-full">
+        </div>
     </div>
 
     <!-- Display Totals -->
@@ -451,10 +459,9 @@ $(document).ready(function() {
         var jobNumber = $('#jobNumberSearch').val();
         var year = $('#yearSearch').val();
         var typeOfWork = $('#typeOfWorkSearch').val();
-        var fromDate = $('#fromDate').val();
-        var toDate = $('#toDate').val();
         var labourHoursSearch = $('#labourHoursSearch').val();
         var materialCostSearch = $('#materialCostSearch').val();
+        var remarksSearch = $('#remarksSearch').val(); // **New: Remarks Search**
 
         $.ajax({
             url: 'search.php',
@@ -465,10 +472,9 @@ $(document).ready(function() {
                 jobNumber: jobNumber,
                 year: year,
                 typeOfWork: typeOfWork,
-                fromDate: fromDate,
-                toDate: toDate,
                 labourHoursSearch: labourHoursSearch,
                 materialCostSearch: materialCostSearch,
+                remarksSearch: remarksSearch, // **New: Pass Remarks Search**
                 page: page
             },
             success: function(response) {
@@ -542,7 +548,7 @@ $(document).ready(function() {
     loadJobs();
 
     // Trigger search on input change or dropdown selection
-    $('#mainSearch, #clientSearch, #jobNumberSearch, #yearSearch, #typeOfWorkSearch, #fromDate, #toDate, #labourHoursSearch, #materialCostSearch').on('input change', function() {
+    $('#mainSearch, #clientSearch, #jobNumberSearch, #yearSearch, #typeOfWorkSearch, #labourHoursSearch, #materialCostSearch, #remarksSearch').on('input change', function() {
         loadJobs();
     });
 
@@ -608,10 +614,9 @@ $(document).ready(function() {
         var jobNumber = $('#jobNumberSearch').val();
         var year = $('#yearSearch').val();
         var typeOfWork = $('#typeOfWorkSearch').val();
-        var fromDate = $('#fromDate').val();
-        var toDate = $('#toDate').val();
         var labourHoursSearch = $('#labourHoursSearch').val();
         var materialCostSearch = $('#materialCostSearch').val();
+        var remarksSearch = $('#remarksSearch').val(); // **New: Remarks Search**
 
         $.ajax({
             url: 'export.php',
@@ -623,10 +628,9 @@ $(document).ready(function() {
                 jobNumber: jobNumber,
                 year: year,
                 typeOfWork: typeOfWork,
-                fromDate: fromDate,
-                toDate: toDate,
                 labourHoursSearch: labourHoursSearch,
-                materialCostSearch: materialCostSearch
+                materialCostSearch: materialCostSearch,
+                remarksSearch: remarksSearch // **New: Pass Remarks Search**
             },
             xhrFields: {
                 responseType: 'blob' // Important for handling binary data
