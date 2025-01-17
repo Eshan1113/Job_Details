@@ -39,6 +39,9 @@ $typeOfWork = trim($_POST['typeOfWork'] ?? '');
 $fromDate = trim($_POST['fromDate'] ?? '');
 $toDate = trim($_POST['toDate'] ?? '');
 $remarksSearch = trim($_POST['remarksSearch'] ?? ''); // **New: Remarks Search**
+$labourCostSearch = trim($_POST['labourCostSearch'] ?? ''); // Labour cost filter
+$materialCostSearch = trim($_POST['materialCostSearch'] ?? ''); // Material cost filter
+$comments = trim($_POST['comments'] ?? ''); // Comments section
 
 $where = [];
 $params = [];
@@ -86,10 +89,22 @@ if (!empty($toDate)) {
     $params[':toDate'] = $toDate;
 }
 
-// **New: Remarks Search Filter**
 if (!empty($remarksSearch)) {
     $where[] = "Remarks LIKE :remarksSearch";
     $params[':remarksSearch'] = '%' . $remarksSearch . '%';
+}
+
+// Additional filters for labor cost and material cost
+if (!empty($labourCostSearch)) {
+    $where[] = "LabourHours = :labourCostSearch";
+    $params[':labourCostSearch'] = $labourCostSearch;
+}
+
+
+
+if (!empty($materialCostSearch)) {
+    $where[] = "MaterialCost = :materialCostSearch";
+    $params[':materialCostSearch'] = $materialCostSearch;
 }
 
 // Build the WHERE clause
@@ -133,13 +148,18 @@ foreach ($jobs as $job) {
     $row = [];
     foreach ($selectedColumns as $col) {
         $value = $job[$col] ?? 'N/A';
-        // Specific formatting
+        // Specific formatting for columns
         if ($col == 'FileClosed') {
             $value = ($value == '1') ? 'Yes' : 'No';
         }
         $row[] = $value;
     }
     fputcsv($output, $row);
+}
+
+// Add the comments as an additional row at the end of the CSV (optional)
+if (!empty($comments)) {
+    fputcsv($output, ['Comments:', $comments]);
 }
 
 fclose($output);
