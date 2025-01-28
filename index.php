@@ -179,6 +179,7 @@ try {
 
 		<a href="http://192.168.1.210:4141/home.php" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">Theam-01 Login</a>
         <a href="login.php" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">Theam-02 Login</a>
+        <a href="iso_audit/login.php" class="bg-red-500 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">Iso Audit</a>
 </div>
     <!-- Display Success or Error Message -->
     <?php if (isset($_SESSION['message'])): ?>
