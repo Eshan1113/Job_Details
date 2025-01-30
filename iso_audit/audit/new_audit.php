@@ -4,6 +4,8 @@ session_start();  // Start the session to store session data
 // If form is submitted, store session variables
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $_SESSION['date_audited'] = $_POST['date_audited'];
+    $_SESSION['inspection_status'] = $_POST['inspection_status'];
+
     $_SESSION['job_status'] = $_POST['job_status'];
     $_SESSION['DTJobNumber'] = $_POST['DTJobNumber'];
     $_SESSION['TypeOfWork'] = $_POST['TypeOfWork'];
@@ -51,11 +53,11 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Job Status -->
             <div class="mb-4">
-                <label for="job_status" class="block text-sm font-semibold text-gray-700">Inspection Status</label>
-                <select name="job_status" id="job_status" class="mt-1 p-2 w-full border rounded-md" required>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Complete">Complete</option>
-                </select>
+                <label for="inspection_status" class="block text-sm font-semibold text-gray-700">Inspection Status</label>
+                <select name="inspection_status" id="inspection_status" class="mt-1 p-2 w-full border rounded-md"required>
+        <option value="Ongoing">Ongoing</option>
+        <option value="Complete">Complete</option>
+    </select>
             </div>
 
             <!-- Job Status (New/Repair) -->
