@@ -24,9 +24,19 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
 <?php ?>
 <br>
 <body class="bg-gray-100 p-8">
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
+        <h1 class="text-3xl font-bold mb-6 text-blue-600 border-b-2 border-blue-200 pb-4">N-BTF Audit Form</h1>
+        
+        <!-- Bilingual Note -->
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p class="text-sm text-blue-800 mb-2">
+                <span class="font-bold">සටහන:</span> සියලුම පරීක්ෂණ දත්ත සම්පූර්ණයෙන් පුරවා නිවැරදි බව තහවුරු කර ගන්න. පසුව අදාල තහවුරු කිරීමේ වාර්තා සහ ලියකියවිලි ඇමුණුම් කරන්න.
+            </p>
+            <p class="text-sm text-blue-800">
+                <span class="font-bold">Note:</span> Complete all inspection data and verify accuracy. Attach relevant verification reports and documents.
+            </p>
+        </div>
 
-    <div class="max-w-3xl mx-auto bg-white p-6 rounded-md shadow-md">
-        <h1 class="text-2xl font-semibold mb-6 text-gray-700">N-BTF Form</h1>
         <form action="../../Controller/submit_data.php" method="POST">
             <!-- Date Audited -->
             <div class="mb-4">
