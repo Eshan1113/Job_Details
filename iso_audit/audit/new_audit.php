@@ -1,5 +1,5 @@
 <?php
-session_start();  // Start the session to store session data
+include_once "../include/header.php"; // Start the session to store session data
 
 // If form is submitted, store session variables
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -65,6 +65,7 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 </head>
+<br>
 <body class="bg-gray-100 p-8">
 
     <div class="max-w-3xl mx-auto bg-white p-6 rounded-md shadow-md">
@@ -126,6 +127,9 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
                     Submit
                 </button>
+                <button type="button" onclick="window.history.back();" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 ml-4">
+            Back
+        </button>
             </div>
         </form>
     </div>

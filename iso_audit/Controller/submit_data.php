@@ -2,80 +2,89 @@
 session_start(); // Start the session to retrieve session data
 
 // Include your database connection
-require_once '../db_conn.php'; // Adjust the path to your database connection file
+require_once '../../db_conn.php'; // Adjust the path to your database connection file
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve form data and session variables
     $date_audited = isset($_POST['date_audited']) ? $_POST['date_audited'] : $_SESSION['date_audited'];
     $job_status = isset($_POST['job_status']) ? $_POST['job_status'] : $_SESSION['job_status'];
-    $inspection_status = isset($_POST['inspection_status']) ? $_POST['inspection_status'] : $_SESSION['inspection_status']; // This line is crucial for inspection_status
+    
+    // Validate 'inspection_status' ENUM values
+    $inspection_status = isset($_POST['inspection_status']) ? $_POST['inspection_status'] : $_SESSION['inspection_status'];
+    if (!in_array($inspection_status, ['complet', 'ongoing'])) {
+        $inspection_status = NULL;  // Set to NULL if invalid
+    }
+
     $DTJobNumber = isset($_POST['DTJobNumber']) ? $_POST['DTJobNumber'] : $_SESSION['DTJobNumber'];
     $TypeOfWork = isset($_POST['TypeOfWork']) ? $_POST['TypeOfWork'] : $_SESSION['TypeOfWork'];
     
+    // Ensure proper values for the 'ENUM' columns
+    $job_order_issued_by_fm = isset($_POST['job_order_issued_by_fm']) && in_array($_POST['job_order_issued_by_fm'], ['Yes', 'No']) ? $_POST['job_order_issued_by_fm'] : NULL;
+    $master_job_files_avail = isset($_POST['master_job_files_avail']) ? $_POST['master_job_files_avail'] : NULL;
+    $spec_sheets_and_all_fabr_drawings = isset($_POST['spec_sheets_and_all_fabr_drawings']) ? $_POST['spec_sheets_and_all_fabr_drawings'] : NULL;
+    $complete_set_of_qa_forms = isset($_POST['complete_set_of_qa_forms']) ? $_POST['complete_set_of_qa_forms'] : NULL;
+    
+    // Ensure numeric fields have valid values (or default to 0 if empty or non-numeric)
+    $physical_pro_percent = isset($_POST['physical_pro_percent']) && is_numeric($_POST['physical_pro_percent']) ? $_POST['physical_pro_percent'] : 0;
+    $qa_pro_percent = isset($_POST['qa_pro_percent']) && is_numeric($_POST['qa_pro_percent']) ? $_POST['qa_pro_percent'] : 0;
+    
+    // Handle 'overall_satisfaction' ENUM values
+    $overall_satisfaction = isset($_POST['overall_satisfaction']) && in_array($_POST['overall_satisfaction'], ['V.good', 'good', 'fair', 'V.bad']) ? $_POST['overall_satisfaction'] : NULL;
+
     // Other form data
-    $job_order_issued_by_fm = isset($_POST['job_order_issued_by_fm']) ? $_POST['job_order_issued_by_fm'] : '';
-    $master_job_files_avail = isset($_POST['master_job_files_avail']) ? $_POST['master_job_files_avail'] : '';
-    $spec_sheets_and_all_fabr_drawings = isset($_POST['spec_sheets_and_all_fabr_drawings']) ? $_POST['spec_sheets_and_all_fabr_drawings'] : '';
-    $complete_set_of_qa_forms = isset($_POST['complete_set_of_qa_forms']) ? $_POST['complete_set_of_qa_forms'] : '';
-    $physical_pro_percent = isset($_POST['physical_pro_percent']) ? $_POST['physical_pro_percent'] : '';
-    $qa_pro_percent = isset($_POST['qa_pro_percent']) ? $_POST['qa_pro_percent'] : '';
-    $tank_joining_report = isset($_POST['tank_joining_report']) ? $_POST['tank_joining_report'] : '';
-    $manhole_test_report = isset($_POST['manhole_test_report']) ? $_POST['manhole_test_report'] : '';
-    $tank_test_report = isset($_POST['tank_test_report']) ? $_POST['tank_test_report'] : '';
-    $valve_body_test_report = isset($_POST['valve_body_test_report']) ? $_POST['valve_body_test_report'] : '';
-    $valve_test_report = isset($_POST['valve_test_report']) ? $_POST['valve_test_report'] : '';
-    $letter_to_chassis_manufacturer = isset($_POST['letter_to_chassis_manufacturer']) ? $_POST['letter_to_chassis_manufacturer'] : '';
-    $fire_extinguisher_report = isset($_POST['fire_extinguisher_report']) ? $_POST['fire_extinguisher_report'] : '';
-    $axel_alignment_test_report = isset($_POST['axel_alignment_test_report']) ? $_POST['axel_alignment_test_report'] : '';
-    $pressure_test_report = isset($_POST['pressure_test_report']) ? $_POST['pressure_test_report'] : '';
-    $aeration_test_report = isset($_POST['aeration_test_report']) ? $_POST['aeration_test_report'] : '';
-    $calibration_chart = isset($_POST['calibration_chart']) ? $_POST['calibration_chart'] : '';
-    $final_check_list_inspection_report = isset($_POST['final_check_list_inspection_report']) ? $_POST['final_check_list_inspection_report'] : '';
-    $labour_hours_sheet = isset($_POST['labour_hours_sheet']) ? $_POST['labour_hours_sheet'] : '';
-    $all_inspection_reports_signed = isset($_POST['all_inspection_reports_signed']) ? $_POST['all_inspection_reports_signed'] : '';
-    $critical_doc_signed = isset($_POST['critical_doc_signed']) ? $_POST['critical_doc_signed'] : '';
-    $delivery_details_attach = isset($_POST['delivery_details_attach']) ? $_POST['delivery_details_attach'] : '';
-    $customer_feedback_attach = isset($_POST['customer_feedback_attach']) ? $_POST['customer_feedback_attach'] : '';
-    $service_at_cost = isset($_POST['service_at_cost']) ? $_POST['service_at_cost'] : '';
-    $all_reports_signed = isset($_POST['all_reports_signed']) ? $_POST['all_reports_signed'] : '';
-    $if_no_specify = isset($_POST['if_no_specify']) ? $_POST['if_no_specify'] : '';
-    $extra_works_attached = isset($_POST['extra_works_attached']) ? $_POST['extra_works_attached'] : '';
-    $overall_satisfaction = isset($_POST['overall_satisfaction']) ? $_POST['overall_satisfaction'] : '';
-    $ncr_raised = isset($_POST['ncr_raised']) ? $_POST['ncr_raised'] : '';
-    $ncr_specify = isset($_POST['ncr_specify']) ? $_POST['ncr_specify'] : '';
-    $auditor_comments = isset($_POST['auditor_comments']) ? $_POST['auditor_comments'] : '';
-    $auditor_name = isset($_POST['auditor_name']) ? $_POST['auditor_name'] : '';
+    $tank_joining_report = isset($_POST['tank_joining_report']) ? $_POST['tank_joining_report'] : NULL;
+    $manhole_test_report = isset($_POST['manhole_test_report']) ? $_POST['manhole_test_report'] : NULL;
+    $tank_test_report = isset($_POST['tank_test_report']) ? $_POST['tank_test_report'] : NULL;
+    $valve_body_test_report = isset($_POST['valve_body_test_report']) ? $_POST['valve_body_test_report'] : NULL;
+    $valve_test_report = isset($_POST['valve_test_report']) ? $_POST['valve_test_report'] : NULL;
+    $letter_to_chassis_manufacturer = isset($_POST['letter_to_chassis_manufacturer']) ? $_POST['letter_to_chassis_manufacturer'] : NULL;
+    $fire_extinguisher_report = isset($_POST['fire_extinguisher_report']) ? $_POST['fire_extinguisher_report'] : NULL;
+    $axel_alignment_test_report = isset($_POST['axel_alignment_test_report']) ? $_POST['axel_alignment_test_report'] : NULL;
+    $pressure_test_report = isset($_POST['pressure_test_report']) ? $_POST['pressure_test_report'] : NULL;
+    $aeration_test_report = isset($_POST['aeration_test_report']) ? $_POST['aeration_test_report'] : NULL;
+    $calibration_chart = isset($_POST['calibration_chart']) ? $_POST['calibration_chart'] : NULL;
+    $final_check_list_inspection_report = isset($_POST['final_check_list_inspection_report']) ? $_POST['final_check_list_inspection_report'] : NULL;
+    $labour_hours_sheet = isset($_POST['labour_hours_sheet']) ? $_POST['labour_hours_sheet'] : NULL;
+    $all_inspection_reports_signed = isset($_POST['all_inspection_reports_signed']) ? $_POST['all_inspection_reports_signed'] : NULL;
+    $critical_doc_signed = isset($_POST['critical_doc_signed']) ? $_POST['critical_doc_signed'] : NULL;
+    $delivery_details_attach = isset($_POST['delivery_details_attach']) ? $_POST['delivery_details_attach'] : NULL;
+    $customer_feedback_attach = isset($_POST['customer_feedback_attach']) ? $_POST['customer_feedback_attach'] : NULL;
+    $service_at_cost = isset($_POST['service_at_cost']) ? $_POST['service_at_cost'] : NULL;
+    $all_reports_signed = isset($_POST['all_reports_signed']) ? $_POST['all_reports_signed'] : NULL;
+    $if_no_specify = isset($_POST['if_no_specify']) ? $_POST['if_no_specify'] : NULL;
+    $extra_works_attached = isset($_POST['extra_works_attached']) ? $_POST['extra_works_attached'] : NULL;
+    $ncr_raised = isset($_POST['ncr_raised']) ? $_POST['ncr_raised'] : NULL;
+    $ncr_specify = isset($_POST['ncr_specify']) ? $_POST['ncr_specify'] : NULL;
+    $auditor_comments = isset($_POST['auditor_comments']) ? $_POST['auditor_comments'] : NULL;
+    $auditor_name = isset($_POST['auditor_name']) ? $_POST['auditor_name'] : NULL;
 
     // Handle file upload (if needed)
     if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
-        // Check if file was uploaded without errors
         $fileName = $_FILES['attachment']['name'];
         $fileTmpName = $_FILES['attachment']['tmp_name'];
         $fileSize = $_FILES['attachment']['size'];
         $fileError = $_FILES['attachment']['error'];
-        
-        // Ensure file doesn't exceed upload size limit
+
         if ($fileError === UPLOAD_ERR_OK) {
-            // Check file size
             if ($fileSize > 1000000) { // 1MB size limit for this example
                 echo "Error: File size is too large.";
             } else {
-                // Assuming you have a 'uploads' folder for file storage
                 $target_dir = "uploads/";
                 $target_file = $target_dir . basename($fileName);
 
-                // Move the uploaded file to the 'uploads' directory
                 if (move_uploaded_file($fileTmpName, $target_file)) {
                     $attachment = $target_file; // Save the file path in the database
                 } else {
                     echo "Error uploading file!";
-                    $attachment = ''; // If file upload fails, leave the field empty
+                    $attachment = '';
                 }
             }
         } else {
             echo "Error: Unable to upload the file. Error code: " . $fileError;
-            $attachment = ''; // If there's an error, leave the field empty
+            $attachment = '';
         }
     } else {
         $attachment = ''; // No file uploaded
@@ -111,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Bind the parameters
     $stmt->bindParam(':date_audited', $date_audited);
     $stmt->bindParam(':TypeOfWork', $TypeOfWork);
-    $stmt->bindParam(':inspection_status', $inspection_status); // Binding the correct parameter for inspection_status
+    $stmt->bindParam(':inspection_status', $inspection_status);
     $stmt->bindParam(':jobs_status', $job_status);
     $stmt->bindParam(':DTJobNumber', $DTJobNumber);
     $stmt->bindParam(':job_order_issued_by_fm', $job_order_issued_by_fm);

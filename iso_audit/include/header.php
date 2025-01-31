@@ -44,9 +44,7 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
     </nav>
 
     <!-- Main Content -->
-    <div class="p-6">
-        <h1 class="text-2xl font-bold text-center">Welcome to My Application!</h1>
-    </div>
+   
 </body>
 
 </html>
