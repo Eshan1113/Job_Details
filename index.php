@@ -55,6 +55,7 @@ try {
     <link href="css/tailwind.min.css" rel="stylesheet">
     <link href="css/all.min.css" rel="stylesheet">
     <link href="css/all.min.css" rel="stylesheet">
+    <link href="font/all.min.css" rel="stylesheet">
     <link href="css/select2.min.css" rel="stylesheet" />
     <script src="css/jquery-3.6.0.min.js"></script>
     <script src="css/select2.min.js"></script>
@@ -201,30 +202,50 @@ try {
 
 <body>
 
-    <nav class="bg-blue-600 p-4">
-        <div class="flex items-center justify-between">
-            <div class="text-white font-semibold text-lg">
-                DT Details
-            </div>
-            <div class="space-x-4">
-                <!-- Theam-01 Login Link -->
-                <a href="http://192.168.1.210:4141/home.php"
-                    class="hover:bg-green-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
-                    Theam-01 Login
-                </a>
-                <!-- Theam-02 Login Link -->
-                <a href="login.php"
-                    class="hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
-                    Job Details
-                </a>
-                <!-- Iso Audit Link -->
-                <a href="iso_audit/login.php"
-                    class="hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
-                    Iso Audit
-                </a>
+<nav class="bg-blue-600 p-4 shadow-md">
+    <div class="container mx-auto flex items-center justify-between">
+        <!-- Logo/Title Section -->
+        <div class="flex items-center">
+            <div class="text-white font-bold text-xl tracking-tight">
+                DT
+                <span class="block text-sm font-light">Pallekele</span>
             </div>
         </div>
-    </nav>
+
+        <!-- Navigation Links -->
+        <div class="hidden md:flex items-center space-x-6">
+            <!-- Theam-01 Login Link -->
+            <a href="http://192.168.1.210:4141/home.php"
+                class="text-white hover:text-blue-100 transition-colors duration-300 font-semibold flex items-center">
+                <span class="mr-2"><i class="fas fa-sign-in-alt"></i></span>
+                Theam-01 Login
+            </a>
+            
+            <!-- Job Details Link -->
+            <a href="login.php"
+                class="text-white hover:text-blue-100 transition-colors duration-300 font-semibold flex items-center">
+                <span class="mr-2"><i class="fas fa-briefcase"></i></span>
+                Job Details
+            </a>
+            
+            <!-- Iso Audit Link -->
+            <a href="iso_audit/login.php"
+                class="text-white hover:text-blue-100 transition-colors duration-300 font-semibold flex items-center">
+                <span class="mr-2"><i class="fas fa-clipboard-check"></i></span>
+                Iso Audit
+            </a>
+        </div>
+
+        <!-- Mobile Menu Button (hidden on larger screens) -->
+        <div class="md:hidden">
+            <button class="text-white hover:text-blue-100 focus:outline-none">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</nav>
     
 
 <br>
