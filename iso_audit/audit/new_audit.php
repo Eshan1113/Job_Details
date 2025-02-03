@@ -9,35 +9,60 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $_SESSION['DTJobNumber'] = $_POST['DTJobNumber'];
     $_SESSION['TypeOfWork'] = $_POST['TypeOfWork'];
 
-    // Redirect to the page based on TypeOfWork selection
-    $redirectionMap = [
-        'N-BTF' => 'Forms/N-BTF.php',
-        'R-BTF' => 'Forms/R-BTF.php',
-        'N-BTW' => 'Forms/N-BTW.php',
-        'R-BTW' => 'Forms/R-BTW.php',
-        'N-CBT' => 'Forms/N-CBT.php',
-        'R-CBT' => 'Forms/R-CBT.php',
-        'N-FBT' => 'Forms/N-FBT.php',
-        'R-FBT' => 'Forms/R-FBT.php',
-        'N-FBC' => 'Forms/N-FBC.php',
-        'R-FBC' => 'Forms/R-FBC.php',
-        'GFW-G' => 'Forms/GFW-G.php',
-        'GFW-P' => 'Forms/GFW-P.php',
-        'N-SILO' => 'Forms/N-SILO.php',
-        'R-SILO' => 'Forms/R-SILO.php',
-        'N-STA' => 'Forms/N-STA.php',
-        'N-STU' => 'Forms/N-STU.php',
-        'N-BTO' => 'Forms/N-BTO.php',
-        'R-BTO' => 'Forms/R-BTO.php'
-    ];
-
+    // Get the inspection status and type of work
+    $inspectionStatus = $_SESSION['inspection_status'];
     $selectedTypeOfWork = $_SESSION['TypeOfWork'];
 
-    if (isset($redirectionMap[$selectedTypeOfWork])) {
-        header('Location: ' . $redirectionMap[$selectedTypeOfWork]);
+    // Define redirection map based on inspection status and TypeOfWork
+    $redirectionMap = [
+        'completed' => [
+            'N-BTF' => 'Completed/N-BTF.php',
+            'R-BTF' => 'Completed/R-BTF.php',
+            'N-BTW' => 'Completed/N-BTW.php',
+            'R-BTW' => 'Completed/R-BTW.php',
+            'N-CBT' => 'Completed/N-CBT.php',
+            'R-CBT' => 'Completed/R-CBT.php',
+            'N-FBT' => 'Completed/N-FBT.php',
+            'R-FBT' => 'Completed/R-FBT.php',
+            'N-FBC' => 'Completed/N-FBC.php',
+            'R-FBC' => 'Completed/R-FBC.php',
+            'GFW-G' => 'Completed/GFW-G.php',
+            'GFW-P' => 'Completed/GFW-P.php',
+            'N-SILO' => 'Completed/N-SILO.php',
+            'R-SILO' => 'Completed/R-SILO.php',
+            'N-STA' => 'Completed/N-STA.php',
+            'N-STU' => 'Completed/N-STU.php',
+            'N-BTO' => 'Completed/N-BTO.php',
+            'R-BTO' => 'Completed/R-BTO.php',
+        ],
+        'ongoing' => [
+            'N-BTF' => 'Ongoing/N-BTF.php',
+            'R-BTF' => 'Ongoing/R-BTF.php',
+            'N-BTW' => 'Ongoing/N-BTW.php',
+            'R-BTW' => 'Ongoing/R-BTW.php',
+            'N-CBT' => 'Ongoing/N-CBT.php',
+            'R-CBT' => 'Ongoing/R-CBT.php',
+            'N-FBT' => 'Ongoing/N-FBT.php',
+            'R-FBT' => 'Ongoing/R-FBT.php',
+            'N-FBC' => 'Ongoing/N-FBC.php',
+            'R-FBC' => 'Ongoing/R-FBC.php',
+            'GFW-G' => 'Ongoing/GFW-G.php',
+            'GFW-P' => 'Ongoing/GFW-P.php',
+            'N-SILO' => 'Ongoing/N-SILO.php',
+            'R-SILO' => 'Ongoing/R-SILO.php',
+            'N-STA' => 'Ongoing/N-STA.php',
+            'N-STU' => 'Ongoing/N-STU.php',
+            'N-BTO' => 'Ongoing/N-BTO.php',
+            'R-BTO' => 'Ongoing/R-BTO.php',
+        ]
+    ];
+
+    if (isset($redirectionMap[$inspectionStatus][$selectedTypeOfWork])) {
+        // Redirect to the correct page based on the selection
+        header('Location: ' . $redirectionMap[$inspectionStatus][$selectedTypeOfWork]);
         exit;
     } else {
-        echo "Invalid TypeOfWork selection!";
+        echo "Invalid TypeOfWork or Inspection Status selection!";
     }
 }
 
