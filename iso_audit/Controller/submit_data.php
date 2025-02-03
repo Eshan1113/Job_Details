@@ -2,7 +2,7 @@
 session_start(); // Start the session to retrieve session data
 
 // Include your database connection
-require_once '../../db_conn.php'; // Adjust the path to your database connection file
+require_once '../db_conn.php'; // Adjust the path to your database connection file
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -11,12 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve form data and session variables
     $date_audited = isset($_POST['date_audited']) ? $_POST['date_audited'] : $_SESSION['date_audited'];
     $job_status = isset($_POST['job_status']) ? $_POST['job_status'] : $_SESSION['job_status'];
-    
-    // Validate 'inspection_status' ENUM values
     $inspection_status = isset($_POST['inspection_status']) ? $_POST['inspection_status'] : $_SESSION['inspection_status'];
-    if (!in_array($inspection_status, ['complet', 'ongoing'])) {
-        $inspection_status = NULL;  // Set to NULL if invalid
-    }
 
     $DTJobNumber = isset($_POST['DTJobNumber']) ? $_POST['DTJobNumber'] : $_SESSION['DTJobNumber'];
     $TypeOfWork = isset($_POST['TypeOfWork']) ? $_POST['TypeOfWork'] : $_SESSION['TypeOfWork'];
