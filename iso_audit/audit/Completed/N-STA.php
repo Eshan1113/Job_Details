@@ -15,7 +15,7 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N-STA Form</title>
+    <title>Completed N-STA Form</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -26,7 +26,7 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
 
 <body class="bg-gray-100 p-8">
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-        <h1 class="text-3xl font-bold mb-6 text-blue-600 border-b-2 border-blue-200 pb-4">N-STA Audit Form</h1>
+        <h1 class="text-3xl font-bold mb-6 text-blue-600 border-b-2 border-blue-200 pb-4">Completed N-STA Audit Form</h1>
 
         <!-- Bilingual Note -->
         <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -165,149 +165,7 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
 
             <!-- Percentage Inputs -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label for="physical_pro_percent" class="block text-sm font-medium text-gray-700 mb-2">Physical Pro.
-                        %</label>
-                    <input type="number" id="physical_pro_percent" name="physical_pro_percent"
-                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm" placeholder="Enter percentage">
-                </div>
-                <div class="mb-4">
-                    <label for="qa_pro_percent" class="block text-sm font-medium text-gray-700 mb-2">QA Pro. %</label>
-                    <input type="number" id="qa_pro_percent" name="qa_pro_percent"
-                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
-                        placeholder="Enter percentage">
-                </div>
-            </div>
-
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div class="p-4 border rounded-lg">
-                    <label for="tank_joining_report" class="block text-sm font-medium text-gray-700 mb-2">Tank Joining
-                        Report</label>
-                    <div class="flex space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="tank_joining_report" name="tank_joining_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="tank_joining_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="tank_joining_report_no" name="tank_joining_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="tank_joining_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-                <!-- 47. manhole_test_report -->
-                <div class="p-4 border rounded-lg">
-                    <label for="manhole_test_report" class="block text-sm font-medium text-gray-700 mb-2">Manhole Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="manhole_test_report" name="manhole_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="manhole_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="manhole_test_report_no" name="manhole_test_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="manhole_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 border rounded-lg">
-                    <label for="tank_test_report" class="block text-sm font-medium text-gray-700 mb-2">Tank Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="tank_test_report" name="tank_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="tank_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="tank_test_report_no" name="tank_test_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="tank_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 border rounded-lg">
-                    <label for="valve_body_test_report" class="block text-sm font-medium text-gray-700 mb-2">Valve Body
-                        Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="valve_body_test_report" name="valve_body_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="valve_body_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="valve_body_test_report_no" name="valve_body_test_report"
-                                value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="valve_body_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 50. valve_test_report -->
-                <div class="p-4 border rounded-lg">
-                    <label for="valve_test_report" class="block text-sm font-medium text-gray-700 mb-2">Valve Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="valve_test_report" name="valve_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="valve_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="valve_test_report_no" name="valve_test_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="valve_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 51. letter_to_chassis_manufacturer -->
-                <div class="p-4 border rounded-lg">
-                    <label for="letter_to_chassis_manufacturer"
-                        class="block text-sm font-medium text-gray-700 mb-2">Letter to
-                        Chassis Manufacturer</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="letter_to_chassis_manufacturer"
-                                name="letter_to_chassis_manufacturer" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="letter_to_chassis_manufacturer" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="letter_to_chassis_manufacturer_no"
-                                name="letter_to_chassis_manufacturer" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="letter_to_chassis_manufacturer_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 52. fire_extinguisher_report -->
-                <div class="p-4 border rounded-lg">
-                    <label for="fire_extinguisher_report" class="block text-sm font-medium text-gray-700 mb-2">Fire
-                        Extinguisher
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="fire_extinguisher_report" name="fire_extinguisher_report"
-                                value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="fire_extinguisher_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="fire_extinguisher_report_no" name="fire_extinguisher_report"
-                                value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="fire_extinguisher_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
+               
 
                 <!-- 53. axel_alignment_test_report -->
                 <div class="p-4 border rounded-lg">
@@ -348,23 +206,6 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                     </div>
                 </div>
 
-                <!-- 55. aeration_test_report-->
-                <div class="p-4 border rounded-lg">
-                    <label for="aeration_test_report" class="block text-sm font-medium text-gray-700 mb-2">Aeration Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="aeration_test_report" name="aeration_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="aeration_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="aeration_test_report_no" name="aeration_test_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="aeration_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- 56. calibration_chart -->
                 <div class="p-4 border rounded-lg">

@@ -163,21 +163,7 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                 </div>
             </div>
 
-            <!-- Percentage Inputs -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label for="physical_pro_percent" class="block text-sm font-medium text-gray-700 mb-2">Physical Pro.
-                        %</label>
-                    <input type="number" id="physical_pro_percent" name="physical_pro_percent"
-                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm" placeholder="Enter percentage">
-                </div>
-                <div class="mb-4">
-                    <label for="qa_pro_percent" class="block text-sm font-medium text-gray-700 mb-2">QA Pro. %</label>
-                    <input type="number" id="qa_pro_percent" name="qa_pro_percent"
-                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm"
-                        placeholder="Enter percentage">
-                </div>
-            </div>
+          
 
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -328,62 +314,7 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                             <label for="axel_alignment_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
                         </div>
                     </div>
-                </div>
-
-                <!-- 54. pressure_test_report-->
-                <div class="p-4 border rounded-lg">
-                    <label for="pressure_test_report" class="block text-sm font-medium text-gray-700 mb-2">Pressure Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="pressure_test_report" name="pressure_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="pressure_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="pressure_test_report_no" name="pressure_test_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="pressure_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 55. aeration_test_report-->
-                <div class="p-4 border rounded-lg">
-                    <label for="aeration_test_report" class="block text-sm font-medium text-gray-700 mb-2">Aeration Test
-                        Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="aeration_test_report" name="aeration_test_report" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="aeration_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="aeration_test_report_no" name="aeration_test_report" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="aeration_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 56. calibration_chart -->
-                <div class="p-4 border rounded-lg">
-                    <label for="calibration_chart" class="block text-sm font-medium text-gray-700 mb-2">Calibration
-                        Chart</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="calibration_chart" name="calibration_chart" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="calibration_chart" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="calibration_chart_no" name="calibration_chart" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="calibration_chart_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
-
+                </div>     
                 <!-- 57. final_check_list_inspection_report -->
                 <div class="p-4 border rounded-lg">
                     <label for="final_check_list_inspection_report"
