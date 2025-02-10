@@ -38,44 +38,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Define redirection map based on inspection status and TypeOfWork
         $redirectionMap = [
             'completed' => [
-                'BTF-N'  => 'Completed/N-BTF.php',
-                'BTF-R'  => 'Completed/R-BTF.php',
-                'BTW-N'  => 'Completed/N-BTW.php',
-                'BTW-R'  => 'Completed/R-BTW.php',
-                'CBT-N'  => 'Completed/N-CBT.php',
-                'CBT-R'  => 'Completed/R-CBT.php',
-                'FBT-N'  => 'Completed/N-FBT.php',
-                'FBT-R'  => 'Completed/R-FBT.php',
-                'FBC-N'  => 'Completed/N-FBC.php',
-                'FBC-R'  => 'Completed/R-FBC.php',
+                'N-BTF'  => 'Completed/N-BTF.php',
+                'R-BTF'  => 'Completed/R-BTF.php',
+                'N-BTW'  => 'Completed/N-BTW.php',
+                'R-BTW'  => 'Completed/R-BTW.php',
+                'N-CBT'  => 'Completed/N-CBT.php',
+                'R-CBT'  => 'Completed/R-CBT.php',
+                'N-FBT'  => 'Completed/N-FBT.php',
+                'R-FBT'  => 'Completed/R-FBT.php',
+                'N-FBC'  => 'Completed/N-FBC.php',
+                'R-FBC'  => 'Completed/R-FBC.php',
                 'GFW-G'  => 'Completed/GFW-G.php',
                 'GFW-P'  => 'Completed/GFW-P.php',
-                'SILO-N' => 'Completed/N-SILO.php',
-                'SILO-R' => 'Completed/R-SILO.php',
-                'STA-N'  => 'Completed/N-STA.php',
-                'STU-N'  => 'Completed/N-STU.php',
-                'BTO-N'  => 'Completed/N-BTO.php',
-                'BTO-R'  => 'Completed/R-BTO.php',
+                'N-SILO' => 'Completed/N-SILO.php',
+                'R-SILO' => 'Completed/R-SILO.php',
+                'N-STA'  => 'Completed/N-STA.php',
+                'N-STU'  => 'Completed/N-STU.php',
+                'N-BTO'  => 'Completed/N-BTO.php',
+                'R-BTO'  => 'Completed/R-BTO.php',
             ],
             'ongoing' => [
-                'BTF-N'  => 'Ongoing/N-BTF.php',
-                'BTF-R'  => 'Ongoing/R-BTF.php',
-                'BTW-N'  => 'Ongoing/N-BTW.php',
-                'BTW-R'  => 'Ongoing/R-BTW.php',
-                'CBT-N'  => 'Ongoing/N-CBT.php',
-                'CBT-R'  => 'Ongoing/R-CBT.php',
-                'FBT-N'  => 'Ongoing/N-FBT.php',
-                'FBT-R'  => 'Ongoing/R-FBT.php',
-                'FBC-N'  => 'Ongoing/N-FBC.php',
-                'FBC-R'  => 'Ongoing/R-FBC.php',
+                'N-BTF'  => 'Ongoing/N-BTF.php',
+                'R-BTF'  => 'Ongoing/R-BTF.php',
+                'N-BTW'  => 'Ongoing/N-BTW.php',
+                'R-BTW'  => 'Ongoing/R-BTW.php',
+                'N-CBT'  => 'Ongoing/N-CBT.php',
+                'R-CBT'  => 'Ongoing/R-CBT.php',
+                'N-FBT'  => 'Ongoing/N-FBT.php',
+                'R-FBT'  => 'Ongoing/R-FBT.php',
+                'N-FBC'  => 'Ongoing/N-FBC.php',
+                'R-FBC'  => 'Ongoing/R-FBC.php',
                 'GFW-G'  => 'Ongoing/GFW-G.php',
                 'GFW-P'  => 'Ongoing/GFW-P.php',
-                'SILO-N' => 'Ongoing/N-SILO.php',
-                'SILO-R' => 'Ongoing/R-SILO.php',
-                'STA-N'  => 'Ongoing/N-STA.php',
-                'STU-N'  => 'Ongoing/N-STU.php',
-                'BTO-N'  => 'Ongoing/N-BTO.php',
-                'BTO-R'  => 'Ongoing/R-BTO.php',
+                'N-SILO' => 'Ongoing/N-SILO.php',
+                'R-SILO' => 'Ongoing/R-SILO.php',
+                'N-STA'  => 'Ongoing/N-STA.php',
+                'N-STU'  => 'Ongoing/N-STU.php',
+                'N-BTO'  => 'Ongoing/N-BTO.php',
+                'R-BTO'  => 'Ongoing/R-BTO.php',
             ]
         ];
 
@@ -94,10 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 require_once '../db_conn.php';
 
 // Fetch job numbers and work types from the database
+$query = "SELECT DTJobNumber FROM jayantha_1500_table";
+$stmt = $pdo->query($query);
+$jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 $query = "SELECT work_type FROM type_of_work";
 $stmt = $pdo->query($query);
 $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
@@ -107,7 +110,7 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISO Audit Form</title>
-
+    
     <link href="../../css/tailwind.min.css" rel="stylesheet">
     <link href="../../css/all.min.css" rel="stylesheet">
     <link href="../../css/select2.min.css" rel="stylesheet" />
@@ -115,6 +118,7 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="../../css/jquery-3.6.0.min.js"></script>
     <script src="../../css/select2.min.js"></script>
 </head>
+<br>
 
 <body class="bg-gray-100 p-8">
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
@@ -131,15 +135,25 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         <?php endif; ?>
 
-        <!-- Form -->
+        <!-- Bilingual Note -->
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p class="text-sm text-blue-800">
+                <span class="font-bold">Note:</span> After completing all details, select the relevant job type and
+                proceed. The appropriate audit form for the selected job type will be automatically displayed.
+            </p>
+        </div>
+
         <form action="new_audit.php" method="POST" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <!-- Date Audited -->
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">Date Audited</label>
-                    <input type="date" name="date_audited" value="<?= date('Y-m-d') ?>"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <!-- No posted date usage; always show today's date by default -->
+                    <input type="date" 
+                           name="date_audited" 
+                           value="<?= date('Y-m-d') ?>"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
 
                 <!-- Inspection Status -->
@@ -150,6 +164,17 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <option value="" disabled selected>Select status...</option>
                         <option value="ongoing">Ongoing</option>
                         <option value="completed">Completed</option>
+                    </select>
+                </div>
+
+                <!-- Job Status -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">Job Status</label>
+                    <select name="job_status"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="" disabled selected>Select job status...</option>
+                        <option value="New">New</option>
+                        <option value="Repair">Repair</option>
                     </select>
                 </div>
 
@@ -173,13 +198,18 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <label class="block text-sm font-medium text-gray-700">DT Job Number</label>
                 <select name="DTJobNumber" class="dt-select2 mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     <option value="" disabled selected>Select job number...</option>
-                    <!-- Job numbers will be dynamically populated here via AJAX -->
+                    <?php foreach ($jobs as $job): ?>
+                        <option value="<?= htmlspecialchars($job['DTJobNumber']) ?>">
+                            <?= htmlspecialchars($job['DTJobNumber']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
             <!-- Form Actions -->
             <div class="flex justify-end space-x-4 mt-8">
-                <button type="button" onclick="window.history.back();"
+                <button type="button" 
+                        onclick="window.history.back();"
                         class="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
                     Back
                 </button>
@@ -192,55 +222,18 @@ $type_of_work = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-       $(document).ready(function () {
-    // Initialize select2 for job number dropdown
-    $('.dt-select2').select2({
-        placeholder: 'Select job number...',
-        allowClear: true,
-        minimumResultsForSearch: 2
-    });
+        $(document).ready(function () {
+            $('.dt-select2').select2({
+                placeholder: 'Select job number...',
+                allowClear: true,
+                minimumResultsForSearch: 2
+            });
 
-    // Initialize select2 for work type dropdown
-    $('.type-select2').select2({
-        placeholder: 'Select work type...',
-        allowClear: true
-    });
-
-    // Listen for changes in the Type of Work
-    $('select[name="TypeOfWork"]').on('change', function () {
-        var selectedTypeOfWork = $(this).val();
-
-        // Fetch and update job numbers based on selected TypeOfWork
-        $.ajax({
-            url: 'get_job_number.php',
-            method: 'POST',
-            data: { TypeOfWork: selectedTypeOfWork },
-            success: function (response) {
-                var jobs = JSON.parse(response); // Parse the JSON response
-                var jobSelect = $('select[name="DTJobNumber"]');
-                jobSelect.empty(); // Clear existing job numbers
-                jobSelect.append('<option value="" disabled selected>Select job number...</option>'); // Add default option
-
-                // Add relevant job numbers to the dropdown
-                if (jobs.length > 0) {
-                    jobs.forEach(function(job) {
-                        jobSelect.append('<option value="' + job.DTJobNumber + '">' + job.DTJobNumber + '</option>');
-                    });
-                } else {
-                    jobSelect.append('<option value="" disabled>No job numbers available</option>');
-                }
-
-                // Reinitialize select2
-                jobSelect.trigger('change');
-            },
-            error: function () {
-                alert('Error loading job numbers.');
-            }
+            $('.type-select2').select2({
+                placeholder: 'Select work type...',
+                allowClear: true
+            });
         });
-    });
-});
-
     </script>
 </body>
-
 </html>
