@@ -139,6 +139,7 @@ $conn->close();
         <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
             <thead class="bg-gray-200">
                 <tr>
+                <th class="py-3 px-6 text-left">Date Audit</th>
                     <th class="py-3 px-6 text-left">Job Number</th>
                     <th class="py-3 px-6 text-left">Type of Work</th>
                     <th class="py-3 px-6 text-left">Inspection Status</th>
@@ -181,6 +182,7 @@ $conn->close();
             <tbody>
                 <?php foreach ($records as $row): ?>
                     <tr>
+                    <td class="py-2 px-6"><?= htmlspecialchars($row['date_audited']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['DTJobNumber']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['TypeOfWork']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['inspection_status']) ?></td>

@@ -84,7 +84,16 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
 
             <!-- Checkbox Group Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <!-- Job Order Issued by FM -->
+    <!-- Select Test Report -->
+    <div class="p-4 border rounded-lg">
+        <label for="select_test" class="block text-sm font-medium text-gray-700 mb-2">Select Test Report</label>
+        <select id="select_test" class="mt-1 p-2 w-full border rounded-md" onchange="toggleReports()">
+            <option value="">Select Test Report</option>
+            <option value="33000">33,000L & 26,400L</option>
+            <option value="chassis_mounted">Chassis Mounted Tanks</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
                 <div class="p-4 border rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Job Order Issued by FM</label>
                     <div class="flex space-x-4">
@@ -254,25 +263,21 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                 </div>
 
                 <!-- 51. letter_to_chassis_manufacturer -->
-                <div class="p-4 border rounded-lg">
-                    <label for="letter_to_chassis_manufacturer"
-                        class="block text-sm font-medium text-gray-700 mb-2">Letter to
-                        Chassis Manufacturer</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="letter_to_chassis_manufacturer"
-                                name="letter_to_chassis_manufacturer" value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="letter_to_chassis_manufacturer" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="letter_to_chassis_manufacturer_no"
-                                name="letter_to_chassis_manufacturer" value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="letter_to_chassis_manufacturer_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
+                <div id="letter_to_chassis_manufacturer_container" class="p-4 border rounded-lg" style="display: none;">
+        <label for="letter_to_chassis_manufacturer" class="block text-sm font-medium text-gray-700 mb-2">Letter to Chassis Manufacturer</label>
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center">
+                <input type="checkbox" id="letter_to_chassis_manufacturer" name="letter_to_chassis_manufacturer" value="yes"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <label for="letter_to_chassis_manufacturer" class="ml-2 text-sm text-gray-700">Yes</label>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="letter_to_chassis_manufacturer_no" name="letter_to_chassis_manufacturer" value="no"
+                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <label for="letter_to_chassis_manufacturer_no" class="ml-2 text-sm text-gray-700">No</label>
+            </div>
+        </div>
+    </div>
 
                 <!-- 52. fire_extinguisher_report -->
                 <div class="p-4 border rounded-lg">
@@ -296,25 +301,21 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                 </div>
 
                 <!-- 53. axel_alignment_test_report -->
-                <div class="p-4 border rounded-lg">
-                    <label for="axel_alignment_test_report" class="block text-sm font-medium text-gray-700 mb-2">Axel
-                        Alignment
-                        Test Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="axel_alignment_test_report" name="axel_alignment_test_report"
-                                value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="axel_alignment_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="axel_alignment_test_report_no" name="axel_alignment_test_report"
-                                value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="axel_alignment_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>     
+  <div id="axel_alignment_test_report_container" class="p-4 border rounded-lg" style="display: none;">
+    <label for="axel_alignment_test_report" class="block text-sm font-medium text-gray-700 mb-2">Axel Alignment Test Report</label>
+    <div class="flex items-center space-x-4">
+        <div class="flex items-center">
+            <input type="checkbox" id="axel_alignment_test_report" name="axel_alignment_test_report" value="yes"
+                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+            <label for="axel_alignment_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" id="axel_alignment_test_report_no" name="axel_alignment_test_report" value="no"
+                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+            <label for="axel_alignment_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
+        </div>
+    </div>
+</div>
                 <!-- 57. final_check_list_inspection_report -->
                 <div class="p-4 border rounded-lg">
                     <label for="final_check_list_inspection_report"
@@ -589,5 +590,27 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
             </div>
         </form>
     </div>
+    <script>
+    // JavaScript function to toggle the visibility of the Axel Alignment Test Report checkbox
+   
+    function toggleReports() {
+        const selectedValue = document.getElementById('select_test').value;
+        const axelAlignmentContainer = document.getElementById('axel_alignment_test_report_container');
+        const letterToChassisContainer = document.getElementById('letter_to_chassis_manufacturer_container');
+        
+        // Hide both by default
+        axelAlignmentContainer.style.display = 'none';
+        letterToChassisContainer.style.display = 'none';
 
+        // Show the Axel Alignment Test Report checkbox if "33,000L & 26,400L" is selected
+        if (selectedValue === '33000') {
+            axelAlignmentContainer.style.display = 'block';
+        }
+
+        // Show the Letter to Chassis Manufacturer checkbox if "Chassis Mounted Tanks" is selected
+        if (selectedValue === 'chassis_mounted') {
+            letterToChassisContainer.style.display = 'block';
+        }
+    }
+</script>
 </html>
