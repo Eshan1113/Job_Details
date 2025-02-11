@@ -17,7 +17,7 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigation Bar</title>
+    <title>Iso Audit</title>
     <link href="../css/tailwind.min.css" rel="stylesheet">
 </head>
 
@@ -34,7 +34,7 @@ $username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username'
             <!-- Links -->
             <div class="space-x-4">
             <a href="audit/new_audit.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">New Audit</a>
-                <a href="view_jobs.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">View Audit Detils</a>
+                <a href="view.php" class="text-white hover:bg-blue-700 px-4 py-2 rounded">View Audit Detils</a>
                 <a href="../index.php" class="text-white bg-red-500 hover:bg-red-700 px-4 py-2 rounded">Logout</a>
             </div>
 
