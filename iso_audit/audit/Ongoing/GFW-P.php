@@ -16,10 +16,12 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ongoing GFW-P Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="../../../css/tailwind.min.css" rel="stylesheet">
+    <link href="../../../css/all.min.css" rel="stylesheet">
+    <link href="../../../font/css/all.min.css" rel="stylesheet">
+    <link href="../../../css/select2.min.css" rel="stylesheet" />
+    <script src="../../../css/jquery-3.6.0.min.js"></script>
+    <script src="../../../css/select2.min.js"></script>
 </head>
 <?php ?>
 <br>

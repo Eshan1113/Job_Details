@@ -16,10 +16,13 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Completed R-BTF Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  
+    <link href="../../../css/tailwind.min.css" rel="stylesheet">
+    <link href="../../../css/all.min.css" rel="stylesheet">
+    <link href="../../../font/css/all.min.css" rel="stylesheet">
+    <link href="../../../css/select2.min.css" rel="stylesheet" />
+    <script src="../../../css/jquery-3.6.0.min.js"></script>
+    <script src="../../../css/select2.min.js"></script>
 </head>
 <?php ?>
 <br>
@@ -84,6 +87,17 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
 
             <!-- Checkbox Group Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+       
+    <!-- Type Of Work -->
+    <div class="p-4 border rounded-lg">
+        <label for="select_test" class="block text-sm font-medium text-gray-700 mb-2">Select Test Report</label>
+        <select id="select_test" class="mt-1 p-2 w-full border rounded-md" onchange="toggleReports()">
+            <option value="">Select Test Report</option>
+            <option value="33000">33,000L & 26,400L</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+
                 <!-- Job Order Issued by FM -->
                 <div class="p-4 border rounded-lg">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Job Order Issued by FM</label>
@@ -121,26 +135,25 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                 </div>
 
                
-                <!-- 53. axel_alignment_test_report -->
-                <div class="p-4 border rounded-lg">
-                    <label for="axel_alignment_test_report" class="block text-sm font-medium text-gray-700 mb-2">Axel
-                        Alignment
-                        Test Report</label>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="axel_alignment_test_report" name="axel_alignment_test_report"
-                                value="yes"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="axel_alignment_test_report" class="ml-2 text-sm text-gray-700">Yes</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="axel_alignment_test_report_no" name="axel_alignment_test_report"
-                                value="no"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="axel_alignment_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
-                        </div>
-                    </div>
-                </div>
+                <div id="axel_alignment_test_report_section" class="p-4 border rounded-lg" style="display:none;">
+    <label for="axel_alignment_test_report" class="block text-sm font-medium text-gray-700 mb-2">Axel Alignment Test Report</label>
+    <div class="flex items-center space-x-4">
+        <!-- Yes Option -->
+        <div class="flex items-center">
+            <input type="checkbox" id="axel_alignment_test_report_yes" name="axel_alignment_test_report" value="yes"
+                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+            <label for="axel_alignment_test_report_yes" class="ml-2 text-sm text-gray-700">Yes</label>
+        </div>
+        
+        <!-- No Option -->
+        <div class="flex items-center">
+            <input type="checkbox" id="axel_alignment_test_report_no" name="axel_alignment_test_report" value="no"
+                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+            <label for="axel_alignment_test_report_no" class="ml-2 text-sm text-gray-700">No</label>
+        </div>
+    </div>
+</div>
+
 
           
                 <!-- 57. final_check_list_inspection_report -->
@@ -418,4 +431,17 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
         </form>
     </div>
 
+  
+    <script>
+    function toggleReports() {
+        var selectedValue = document.getElementById('select_test').value;
+        
+        // Show the Axel Alignment Test Report section only if '33000' is selected
+        if (selectedValue === '33000') {
+            document.getElementById('axel_alignment_test_report_section').style.display = 'block';
+        } else {
+            document.getElementById('axel_alignment_test_report_section').style.display = 'none';
+        }
+    }
+</script>
 </html>
