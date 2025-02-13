@@ -1,19 +1,46 @@
 <?php
-// Assuming you're using PHP to retrieve data from the database
-
-// Create a connection to your database
+include_once 'include/header.php';
 require_once '../db_conn.php';
 
-// Create connection
-$conn = new mysqli($host, $user, $pass, $db);
+// Get the search input from the user, if any
+$searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
+$inspectionStatusFilter = isset($_GET['inspectionStatus']) ? $_GET['inspectionStatus'] : '';
+$jobStatusFilter = isset($_GET['jobStatus']) ? $_GET['jobStatus'] : '';
+$typeOfWorkFilter = isset($_GET['typeOfWork']) ? $_GET['typeOfWork'] : '';
 
-// Check connection
+// Pagination: Show 10 records per page
+$limit = 10;
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$start = ($page - 1) * $limit;
+
+// Create a base SQL query with conditions based on the search filters
+$sql = "SELECT * FROM iso_audit_details WHERE 1=1";
+
+// Apply search filters
+if ($searchTerm) {
+    $sql .= " AND (DTJobNumber LIKE '%$searchTerm%' OR TypeOfWork LIKE '%$searchTerm%' OR inspection_status LIKE '%$searchTerm%' OR jobs_status LIKE '%$searchTerm%')";
+}
+
+if ($inspectionStatusFilter) {
+    $sql .= " AND inspection_status LIKE '%$inspectionStatusFilter%'";
+}
+
+if ($jobStatusFilter) {
+    $sql .= " AND jobs_status LIKE '%$jobStatusFilter%'";
+}
+
+if ($typeOfWorkFilter) {
+    $sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
+}
+
+// Apply pagination to the SQL query
+$sql .= " LIMIT $start, $limit";
+
+// Execute the query
+$conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-// Retrieve all records from the iso_audit_details table
-$sql = "SELECT * FROM iso_audit_details";
 $result = $conn->query($sql);
 
 $records = [];
@@ -22,6 +49,25 @@ if ($result->num_rows > 0) {
         $records[] = $row;
     }
 }
+
+// Get the total number of matching records for pagination
+$total_sql = "SELECT COUNT(*) FROM iso_audit_details WHERE 1=1";
+if ($searchTerm) {
+    $total_sql .= " AND (DTJobNumber LIKE '%$searchTerm%' OR TypeOfWork LIKE '%$searchTerm%' OR inspection_status LIKE '%$searchTerm%' OR jobs_status LIKE '%$searchTerm%')";
+}
+if ($inspectionStatusFilter) {
+    $total_sql .= " AND inspection_status LIKE '%$inspectionStatusFilter%'";
+}
+if ($jobStatusFilter) {
+    $total_sql .= " AND jobs_status LIKE '%$jobStatusFilter%'";
+}
+if ($typeOfWorkFilter) {
+    $total_sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
+}
+
+$total_result = $conn->query($total_sql);
+$total_rows = $total_result->fetch_array()[0];
+$total_pages = ceil($total_rows / $limit);
 
 $conn->close();
 ?>
@@ -34,70 +80,33 @@ $conn->close();
     <title>ISO Audit Details</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        // Function for real-time search across all columns
         function searchTable() {
-            const input = document.getElementById('searchInput');
-            const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll('table tbody tr');
-            
-            rows.forEach(row => {
-                let cells = row.getElementsByTagName('td');
-                let match = false;
-                
-                for (let i = 0; i < cells.length; i++) {
-                    if (cells[i].innerText.toLowerCase().indexOf(filter) > -1) {
-                        match = true;
-                        break;
-                    }
-                }
-                
-                if (match) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            const searchInput = document.getElementById('searchInput');
+            const filter = searchInput.value.toLowerCase();
+            window.location.href = "?search=" + filter + "&inspectionStatus=" + document.getElementById('inspectionStatus').value + "&jobStatus=" + document.getElementById('jobStatus').value + "&typeOfWork=" + document.getElementById('typeOfWork').value;
         }
-
-        function filterByJobType() {
-            const jobType = document.getElementById('jobType').value.toLowerCase();
-            const rows = document.querySelectorAll('table tbody tr');
-            
-            rows.forEach(row => {
-                const jobTypeCell = row.cells[2].innerText.toLowerCase();
-                if (jobTypeCell.indexOf(jobType) > -1) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        function filterByStatus() {
-            const status = document.getElementById('inspectionStatus').value.toLowerCase();
-            const rows = document.querySelectorAll('table tbody tr');
-            
-            rows.forEach(row => {
-                const statusCell = row.cells[3].innerText.toLowerCase();
-                if (statusCell.indexOf(status) > -1) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+        
+        function filterByInspectionStatus() {
+            searchTable();
         }
 
         function filterByJobStatus() {
-            const jobStatus = document.getElementById('jobStatus').value.toLowerCase();
-            const rows = document.querySelectorAll('table tbody tr');
-            
-            rows.forEach(row => {
-                const jobStatusCell = row.cells[4].innerText.toLowerCase();
-                if (jobStatusCell.indexOf(jobStatus) > -1) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            searchTable();
+        }
+
+        function filterByTypeOfWork() {
+            searchTable();
+        }
+
+        // Show the export modal
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            document.getElementById('exportModal').classList.remove('hidden');
+        });
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById('exportModal').classList.add('hidden');
         }
     </script>
 </head>
@@ -114,32 +123,265 @@ $conn->close();
                 onkeyup="searchTable()"
                 class="px-4 py-2 border border-gray-300 rounded-md w-1/4"
                 placeholder="Search by Job Number, Type, Status..."
+                value="<?= htmlspecialchars($searchTerm) ?>"
             />
-            
-            <select id="jobType" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByJobType()">
-                <option value="">Select Job Type</option>
-                <option value="new">New</option>
-                <option value="repair">Repair</option>
-            </select>
 
-            <select id="inspectionStatus" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByStatus()">
+            <input
+                type="text"
+                id="typeOfWork"
+                onkeyup="filterByTypeOfWork()"
+                class="px-4 py-2 border border-gray-300 rounded-md w-1/4"
+                placeholder="Search by Type of Work"
+                value="<?= htmlspecialchars($typeOfWorkFilter) ?>"
+            />
+
+            <select id="inspectionStatus" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByInspectionStatus()">
                 <option value="">Select Inspection Status</option>
-                <option value="completed">Completed</option>
-                <option value="ongoing">Ongoing</option>
+                <option value="completed" <?= ($inspectionStatusFilter == 'completed') ? 'selected' : '' ?>>Completed</option>
+                <option value="ongoing" <?= ($inspectionStatusFilter == 'ongoing') ? 'selected' : '' ?>>Ongoing</option>
             </select>
 
             <select id="jobStatus" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByJobStatus()">
                 <option value="">Select Job Status</option>
-                <option value="new">New</option>
-                <option value="repair">Repair</option>
+                <option value="new" <?= ($jobStatusFilter == 'new') ? 'selected' : '' ?>>New</option>
+                <option value="repair" <?= ($jobStatusFilter == 'repair') ? 'selected' : '' ?>>Repair</option>
             </select>
         </div>
 
-        <!-- Table -->
-        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-            <thead class="bg-gray-200">
-                <tr>
-                <th class="py-3 px-6 text-left">Date Audit</th>
+        <!-- Export to Excel Button -->
+        <button id="exportBtn" class="px-4 py-2 bg-green-500 text-white rounded-md mt-4">Export to Excel</button>
+<br>
+        <!-- Modal for column selection -->
+        <!-- Modal for column selection -->
+        <div id="exportModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg w-1/3 grid gap-4 max-h-[80vh] overflow-y-auto">
+        <h2 class="text-2xl mb-4">Select Columns to Export</h2>
+        <form id="exportForm" method="POST" action="export.php" class="grid gap-4">
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="date_audited" checked> Date Audit
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="DTJobNumber" checked> Job Number
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="TypeOfWork" checked> Type of Work
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="overall_satisfaction" checked> Overall Satisfaction
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="inspection_status" checked> Inspection Status
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="jobs_status" checked> Job Status
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="auditor_name" checked> Auditor Name
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="job_order_issued_by_fm" checked> Job Order Issued by FM
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="master_job_files_avail" checked> Master Job Files Available
+                </label>
+            </div>
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="spec_sheets_and_all_fabr_drawings" checked> Spec Sheets and All Drawings
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="complete_set_of_qa_forms" checked> QA Forms Complete
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="physical_pro_percent" checked> Physical Pro Percent
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="qa_pro_percent" checked> QA Pro Percent
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="tank_joining_report" checked> Tank Joining Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="manhole_test_report" checked> Manhole Test Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="tank_test_report" checked> Tank Test Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="valve_body_test_report" checked> Valve Body Test Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="valve_test_report" checked> Valve Test Report
+                </label>
+            </div>
+
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="letter_to_chassis_manufacturer" checked> Letter to Chassis Manufacturer
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="fire_extinguisher_report" checked> Fire Extinguisher Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="axel_alignment_test_report" checked> Axel Alignment Test Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="pressure_test_report" checked> Pressure Test Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="aeration_test_report" checked> Aeration Test Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="calibration_chart" checked> Calibration Chart
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="final_check_list_inspection_report" checked> Final Check List Inspection Report
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="labour_hours_sheet" checked> Labour Hours Sheet
+                </label>
+            </div>
+         
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="all_inspection_reports_signed" checked> All Inspection Reports Signed
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="critical_doc_signed" checked> Critical Docs Signed
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="delivery_details_attach" checked> Delivery Details Attached
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="customer_feedback_attach" checked> Customer Feedback Attached
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="service_at_cost" checked> Service at Cost
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="all_reports_signed" checked> All Reports Signed
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="ncr_raised" checked> NCR Raised
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="ncr_specify" checked> NCR Specify
+                </label>
+            </div>
+
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="auditor_comments" checked> Auditor Comments
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="extra_works_attached" checked> Extra Works Attached
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label>
+                    <input type="checkbox" name="columns[]" value="if_no_specify" checked> If No, Specify
+                </label>
+            </div>
+            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Download</button>
+        </form>
+        <button onclick="closeModal()" class="px-4 py-2 bg-red-500 text-white rounded-md mt-4">Close</button>
+    </div>
+</div>
+<br>    <!-- Table with Scroll -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+                <thead class="bg-gray-200">
+                    <tr>
+                     <th class="py-3 px-6 text-left">Date Audit</th>
                     <th class="py-3 px-6 text-left">Job Number</th>
                     <th class="py-3 px-6 text-left">Type of Work</th>
                     <th class="py-3 px-6 text-left">Inspection Status</th>
@@ -178,11 +420,13 @@ $conn->close();
                     <th class="py-3 px-6 text-left">If No, Specify</th>
                     <th class="py-3 px-6 text-left">Overall Satisfaction</th>
                 </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($records as $row): ?>
-                    <tr>
-                    <td class="py-2 px-6"><?= htmlspecialchars($row['date_audited']) ?></td>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($records as $row): ?>
+                        <tr>
+                        <td class="py-2 px-6"><?= htmlspecialchars($row['date_audited']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['DTJobNumber']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['TypeOfWork']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['inspection_status']) ?></td>
@@ -220,11 +464,44 @@ $conn->close();
                         <td class="py-2 px-6"><?= htmlspecialchars($row['extra_works_attached']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['if_no_specify']) ?></td>
                         <td class="py-2 px-6"><?= htmlspecialchars($row['overall_satisfaction']) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Display total matching records -->
+        <div class="mt-4 text-center">
+            <p class="text-gray-600">Total matching records: <?= $total_rows ?></p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 text-center">
+            <ul class="inline-flex items-center">
+                <?php if ($page > 1): ?>
+                    <li><a href="?page=<?= $page - 1 ?>&search=<?= urlencode($searchTerm) ?>&inspectionStatus=<?= urlencode($inspectionStatusFilter) ?>&jobStatus=<?= urlencode($jobStatusFilter) ?>&typeOfWork=<?= urlencode($typeOfWorkFilter) ?>" class="px-4 py-2 bg-blue-500 text-white rounded-l">Prev</a></li>
+                <?php endif; ?>
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li><a href="?page=<?= $i ?>&search=<?= urlencode($searchTerm) ?>&inspectionStatus=<?= urlencode($inspectionStatusFilter) ?>&jobStatus=<?= urlencode($jobStatusFilter) ?>&typeOfWork=<?= urlencode($typeOfWorkFilter) ?>" class="px-4 py-2 border"><?= $i ?></a></li>
+                <?php endfor; ?>
+                <?php if ($page < $total_pages): ?>
+                    <li><a href="?page=<?= $page + 1 ?>&search=<?= urlencode($searchTerm) ?>&inspectionStatus=<?= urlencode($inspectionStatusFilter) ?>&jobStatus=<?= urlencode($jobStatusFilter) ?>&typeOfWork=<?= urlencode($typeOfWorkFilter) ?>" class="px-4 py-2 bg-blue-500 text-white rounded-r">Next</a></li>
+                <?php endif; ?>
+            </ul>
+        </div>
     </div>
+    <script>
+    // Show the export modal when the button is clicked
+    document.getElementById('exportBtn').addEventListener('click', function() {
+        document.getElementById('exportModal').classList.remove('hidden');
+    });
+
+    // Close the modal
+    function closeModal() {
+        document.getElementById('exportModal').classList.add('hidden');
+    }
+</script>
 
 </body>
 </html>
