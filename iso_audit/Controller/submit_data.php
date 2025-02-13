@@ -60,30 +60,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $auditor_name = isset($_POST['auditor_name']) ? $_POST['auditor_name'] : NULL;
 
     // Handle file upload (if needed)
-    $attachment = '';
-    if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
-        $fileName = $_FILES['attachment']['name'];
-        $fileTmpName = $_FILES['attachment']['tmp_name'];
-        $fileSize = $_FILES['attachment']['size'];
-        $fileError = $_FILES['attachment']['error'];
+    // Handle file upload (if needed)
+// Handle file upload
+$attachment = '';
+if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
+    $fileName = $_FILES['attachment']['name'];
+    $fileTmpName = $_FILES['attachment']['tmp_name'];
+    $fileSize = $_FILES['attachment']['size'];
+    $fileError = $_FILES['attachment']['error'];
 
-        if ($fileError === UPLOAD_ERR_OK) {
-            if ($fileSize > 1000000) { // 1MB size limit for this example
-                echo "Error: File size is too large.";
-            } else {
-                $target_dir = "uploads/";
-                $target_file = $target_dir . basename($fileName);
+    if ($fileError === UPLOAD_ERR_OK) {
+        // Define the base directory relative to the project root
+        $baseDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
+        $folderName = 'audit_files';
+        $targetFolder = $baseDir . $folderName . DIRECTORY_SEPARATOR;
 
-                if (move_uploaded_file($fileTmpName, $target_file)) {
-                    $attachment = $target_file; // Save the file path in the database
-                } else {
-                    echo "Error uploading file!";
-                }
+        // Create the directory if it doesn't exist
+        if (!file_exists($targetFolder)) {
+            if (!mkdir($targetFolder, 0777, true)) {
+                // Log error and stop execution if directory creation fails
+                die('Failed to create directory: ' . $targetFolder);
             }
+        }
+
+        // Check file size limit (1MB)
+        if ($fileSize > 1000000) {
+            die('Error: File size exceeds 1MB limit.');
+        }
+
+        // Sanitize the filename to prevent directory traversal
+        $fileNameSafe = basename($fileName);
+        $targetFile = $targetFolder . $fileNameSafe;
+
+        // Check if file already exists
+        if (file_exists($targetFile)) {
+            die('Error: File already exists.');
+        }
+
+        // Move the uploaded file to the target directory
+        if (move_uploaded_file($fileTmpName, $targetFile)) {
+            $attachment = $targetFile; // Save the path for database storage
         } else {
-            echo "Error: Unable to upload the file. Error code: " . $fileError;
+            die('Error: Failed to move uploaded file. Check directory permissions.');
         }
     }
+} elseif (isset($_FILES['attachment'])) {
+    // If file wasn't uploaded successfully, display the error code
+    die('Error: File upload error code ' . $_FILES['attachment']['error']);
+} else {
+    // If no file was uploaded, set a default value or handle accordingly
+    $attachment = ''; // No file uploaded
+}
+
 
     // Prepare SQL insert statement
     $query = "INSERT INTO iso_audit_details (

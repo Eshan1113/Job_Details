@@ -39,7 +39,7 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
             </p>
         </div>
 
-        <form action="../../Controller/submit_data.php" method="POST">
+        <form action="../../Controller/submit_data.php" method="POST" enctype="multipart/form-data">
             <!-- Top Section Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <!-- Date Audited -->
@@ -405,10 +405,11 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
                     placeholder="Specify details of NCR raised">
             </div>
             <div class="mb-4">
-                <label for="attachment" class="block text-sm font-medium text-gray-700">Attachment</label>
-                <input type="file" id="attachment" name="attachment"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            </div>
+        <label for="attachment" class="block text-sm font-medium text-gray-700">Attachment</label>
+        <input type="file" id="attachment" name="attachment"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+    </div>
+
             <!-- Final Section -->
             <div class="grid grid-cols-1 gap-4 mb-6">
                 <!-- Auditor Comments -->

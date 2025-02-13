@@ -40,7 +40,8 @@ $TypeOfWork = isset($_SESSION['TypeOfWork']) ? $_SESSION['TypeOfWork'] : '';
             </p>
         </div>
 
-        <form action="../../Controller/submit_data.php" method="POST">
+   
+        <form action="../../Controller/submit_data.php" method="POST" enctype="multipart/form-data">
             <!-- Top Section Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <!-- Date Audited -->
