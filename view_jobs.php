@@ -621,17 +621,19 @@ $(document).ready(function() {
         $.ajax({
             url: 'export.php',
             type: 'POST',
-            data: {
-                columns: columns,
-                mainSearch: mainSearch,
-                client: client,
-                jobNumber: jobNumber,
-                year: year,
-                typeOfWork: typeOfWork,
-                labourHoursSearch: labourHoursSearch,
-                materialCostSearch: materialCostSearch,
-                remarksSearch: remarksSearch // **New: Pass Remarks Search**
-            },
+        
+                data: {
+        columns: columns,
+        mainSearch: mainSearch,
+        client: client,
+        jobNumber: jobNumber,
+        year: year,
+        typeOfWork: typeOfWork,
+        labourCostSearch: labourHoursSearch, // Corrected key to match export.php
+        materialCostSearch: materialCostSearch,
+        remarksSearch: remarksSearch
+    }, 
+        
             xhrFields: {
                 responseType: 'blob' // Important for handling binary data
             },
