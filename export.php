@@ -7,6 +7,7 @@ ini_set('error_log', 'php-error.log'); // Update with your actual path
 
 session_start();
 
+include('db_conn.php'); // Database connection
 // Check if user is logged in
 if (!isset($_SESSION['username'])) {
     http_response_code(401); // Unauthorized
@@ -14,7 +15,6 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-include('db_conn.php'); // Database connection
 
 // Retrieve and sanitize POST parameters
 $columns = $_POST['columns'] ?? [];
@@ -38,7 +38,7 @@ $year = trim($_POST['year'] ?? '');
 $typeOfWork = trim($_POST['typeOfWork'] ?? '');
 $fromDate = trim($_POST['fromDate'] ?? '');
 $toDate = trim($_POST['toDate'] ?? '');
-$remarksSearch = trim($_POST['remarksSearch'] ?? ''); // **New: Remarks Search**
+$remarksSearch = trim($_POST['remarksSearch'] ?? '');
 $labourCostSearch = trim($_POST['labourCostSearch'] ?? ''); // Labour cost filter
 $materialCostSearch = trim($_POST['materialCostSearch'] ?? ''); // Material cost filter
 $comments = trim($_POST['comments'] ?? ''); // Comments section
@@ -94,13 +94,18 @@ if (!empty($remarksSearch)) {
     $params[':remarksSearch'] = '%' . $remarksSearch . '%';
 }
 
-// Additional filters for labor cost and material cost
-if (!empty($labourCostSearch)) {
-    $where[] = "LabourHours = :labourCostSearch";
-    $params[':labourCostSearch'] = $labourCostSearch;
+// Updated filter for labor hours
+if ($labourCostSearch !== '') {
+    if ($labourCostSearch === '0') {
+        // Include rows where LabourHours is exactly 0
+        $where[] = "LabourHours = :labourCostSearch";
+        $params[':labourCostSearch'] = 0; // Explicitly set to 0
+    } else {
+        // Include rows where LabourHours matches the search value
+        $where[] = "LabourHours = :labourCostSearch";
+        $params[':labourCostSearch'] = $labourCostSearch;
+    }
 }
-
-
 
 if (!empty($materialCostSearch)) {
     $where[] = "MaterialCost = :materialCostSearch";
