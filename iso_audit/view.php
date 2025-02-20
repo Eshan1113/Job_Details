@@ -7,6 +7,7 @@ $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
 $inspectionStatusFilter = isset($_GET['inspectionStatus']) ? $_GET['inspectionStatus'] : '';
 $jobStatusFilter = isset($_GET['jobStatus']) ? $_GET['jobStatus'] : '';
 $typeOfWorkFilter = isset($_GET['typeOfWork']) ? $_GET['typeOfWork'] : '';
+$dateAuditFilter = isset($_GET['dateAudit']) ? $_GET['dateAudit'] : '';
 
 // Pagination: Show 10 records per page
 $limit = 10;
@@ -33,6 +34,10 @@ if ($typeOfWorkFilter) {
     $sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
 }
 
+if ($dateAuditFilter) {
+    $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
+}
+
 // Apply pagination to the SQL query
 $sql .= " LIMIT $start, $limit";
 
@@ -52,25 +57,38 @@ if ($result->num_rows > 0) {
 
 // Get the total number of matching records for pagination
 $total_sql = "SELECT COUNT(*) FROM iso_audit_details WHERE 1=1";
+
+// Apply search filters to the total query
 if ($searchTerm) {
     $total_sql .= " AND (DTJobNumber LIKE '%$searchTerm%' OR TypeOfWork LIKE '%$searchTerm%' OR inspection_status LIKE '%$searchTerm%' OR jobs_status LIKE '%$searchTerm%')";
 }
+
 if ($inspectionStatusFilter) {
     $total_sql .= " AND inspection_status LIKE '%$inspectionStatusFilter%'";
 }
+
 if ($jobStatusFilter) {
     $total_sql .= " AND jobs_status LIKE '%$jobStatusFilter%'";
 }
+
 if ($typeOfWorkFilter) {
     $total_sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
 }
 
+if ($dateAuditFilter) {
+    $total_sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
+}
+
+// Execute the query for total rows
 $total_result = $conn->query($total_sql);
 $total_rows = $total_result->fetch_array()[0];
+
+// Calculate the total number of pages
 $total_pages = ceil($total_rows / $limit);
 
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -82,10 +100,14 @@ $conn->close();
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Function for real-time search across all columns
+
+        // Function for real-time search across all columns
         function searchTable() {
             const searchInput = document.getElementById('searchInput');
+            const dateAuditInput = document.getElementById('dateAuditInput');
             const filter = searchInput.value.toLowerCase();
-            window.location.href = "?search=" + filter + "&inspectionStatus=" + document.getElementById('inspectionStatus').value + "&jobStatus=" + document.getElementById('jobStatus').value + "&typeOfWork=" + document.getElementById('typeOfWork').value;
+            const dateFilter = dateAuditInput.value;
+            window.location.href = "?search=" + filter + "&dateAudit=" + dateFilter + "&inspectionStatus=" + document.getElementById('inspectionStatus').value + "&jobStatus=" + document.getElementById('jobStatus').value + "&typeOfWork=" + document.getElementById('typeOfWork').value;
         }
 
         function filterByInspectionStatus() {
@@ -100,14 +122,8 @@ $conn->close();
             searchTable();
         }
 
-        // Show the export modal
-        document.getElementById('exportBtn').addEventListener('click', function () {
-            document.getElementById('exportModal').classList.remove('hidden');
-        });
-
-        // Close the modal
-        function closeModal() {
-            document.getElementById('exportModal').classList.add('hidden');
+        function filterByDateAudit() {
+            searchTable();
         }
     </script>
 </head>
@@ -121,11 +137,13 @@ $conn->close();
         <div class="mb-4 flex justify-between items-center">
             <input type="text" id="searchInput" onkeyup="searchTable()"
                 class="px-4 py-2 border border-gray-300 rounded-md w-1/4"
-                placeholder="Search by Job Number, Type, Status..." value="<?= htmlspecialchars($searchTerm) ?>" />
+                placeholder="Search by Job Number" value="<?= htmlspecialchars($searchTerm) ?>" />
 
             <input type="text" id="typeOfWork" onkeyup="filterByTypeOfWork()"
                 class="px-4 py-2 border border-gray-300 rounded-md w-1/4" placeholder="Search by Type of Work"
                 value="<?= htmlspecialchars($typeOfWorkFilter) ?>" />
+
+                <input type="date" id="dateAuditInput" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByDateAudit()" />
 
             <select id="inspectionStatus" class="px-4 py-2 border border-gray-300 rounded-md w-1/4"
                 onchange="filterByInspectionStatus()">
@@ -153,6 +171,12 @@ $conn->close();
             <div class="bg-white p-6 rounded-lg w-1/3 grid gap-4 max-h-[80vh] overflow-y-auto">
                 <h2 class="text-2xl mb-4">Select Columns to Export</h2>
                 <form id="exportForm" method="POST" action="export.php" class="grid gap-4">
+    <!-- Hidden inputs to pass filters -->
+    <input type="hidden" name="search" value="<?= htmlspecialchars($searchTerm) ?>">
+    <input type="hidden" name="inspectionStatus" value="<?= htmlspecialchars($inspectionStatusFilter) ?>">
+    <input type="hidden" name="jobStatus" value="<?= htmlspecialchars($jobStatusFilter) ?>">
+    <input type="hidden" name="typeOfWork" value="<?= htmlspecialchars($typeOfWorkFilter) ?>">
+    <input type="hidden" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>">
                     <div class="mb-4">
                         <label>
                             <input type="checkbox" name="columns[]" value="date_audited" checked> Date Audit
@@ -523,7 +547,7 @@ $conn->close();
     </div>
     <script>
         // Show the export modal when the button is clicked
-        document.getElementById('exportBtn').addEventListener('click', function () {
+        document.getElementById('exportBtn').addEventListener('click', function() {
             document.getElementById('exportModal').classList.remove('hidden');
         });
 
@@ -531,9 +555,6 @@ $conn->close();
         function closeModal() {
             document.getElementById('exportModal').classList.add('hidden');
         }
-
-
-
     </script>
 
 </body>

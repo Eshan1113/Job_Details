@@ -15,25 +15,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['columns'])) {
     $columns = implode(', ', $selectedColumns);
     $sql = "SELECT $columns FROM iso_audit_details WHERE 1=1"; // Always start with WHERE 1=1 to make appending conditions easier
 
-    // Apply filters based on GET parameters from view.php
-    if (isset($_GET['search']) && $_GET['search'] !== '') {
-        $searchTerm = $_GET['search'];
+    // Apply filters based on POST parameters from view.php
+    if (isset($_POST['search']) && $_POST['search'] !== '') {
+        $searchTerm = $_POST['search'];
         $sql .= " AND (DTJobNumber LIKE '%$searchTerm%' OR TypeOfWork LIKE '%$searchTerm%' OR inspection_status LIKE '%$searchTerm%' OR jobs_status LIKE '%$searchTerm%')";
     }
 
-    if (isset($_GET['inspectionStatus']) && $_GET['inspectionStatus'] !== '') {
-        $inspectionStatusFilter = $_GET['inspectionStatus'];
+    if (isset($_POST['inspectionStatus']) && $_POST['inspectionStatus'] !== '') {
+        $inspectionStatusFilter = $_POST['inspectionStatus'];
         $sql .= " AND inspection_status LIKE '%$inspectionStatusFilter%'";
     }
 
-    if (isset($_GET['jobStatus']) && $_GET['jobStatus'] !== '') {
-        $jobStatusFilter = $_GET['jobStatus'];
+    if (isset($_POST['jobStatus']) && $_POST['jobStatus'] !== '') {
+        $jobStatusFilter = $_POST['jobStatus'];
         $sql .= " AND jobs_status LIKE '%$jobStatusFilter%'";
     }
 
-    if (isset($_GET['typeOfWork']) && $_GET['typeOfWork'] !== '') {
-        $typeOfWorkFilter = $_GET['typeOfWork'];
+    if (isset($_POST['typeOfWork']) && $_POST['typeOfWork'] !== '') {
+        $typeOfWorkFilter = $_POST['typeOfWork'];
         $sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
+    }
+
+    if (isset($_POST['dateAudit']) && $_POST['dateAudit'] !== '') {
+        $dateAuditFilter = $_POST['dateAudit'];
+        $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
     }
 
     // Execute the query

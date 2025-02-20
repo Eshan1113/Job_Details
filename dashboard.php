@@ -132,8 +132,8 @@ try {
             <div class="mt-4">
                 <label for="FileClosed" class="block text-sm font-semibold text-gray-700">File Closed</label>
                 <select name="FileClosed" id="FileClosed" class="mt-1 p-2 w-full border rounded-md" required>
-                    <option value="0">No</option>
-                    <option value="1">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
                 </select>
             </div>
             <div class="mt-4">
