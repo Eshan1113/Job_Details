@@ -97,34 +97,119 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISO Audit Details</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Function for real-time search across all columns
+        function searchTable(page = 1) {
+            const searchInput = document.getElementById('searchInput').value;
+            const dateAuditInput = document.getElementById('dateAuditInput').value;
+            const inspectionStatus = document.getElementById('inspectionStatus').value;
+            const jobStatus = document.getElementById('jobStatus').value;
+            const typeOfWork = document.getElementById('typeOfWork').value;
 
-        // Function for real-time search across all columns
-        function searchTable() {
-            const searchInput = document.getElementById('searchInput');
-            const dateAuditInput = document.getElementById('dateAuditInput');
-            const filter = searchInput.value.toLowerCase();
-            const dateFilter = dateAuditInput.value;
-            window.location.href = "?search=" + filter + "&dateAudit=" + dateFilter + "&inspectionStatus=" + document.getElementById('inspectionStatus').value + "&jobStatus=" + document.getElementById('jobStatus').value + "&typeOfWork=" + document.getElementById('typeOfWork').value;
+            // Send the AJAX request to the server
+            $.ajax({
+                url: 'search_audit.php',
+                type: 'GET',
+                data: {
+                    search: searchInput,
+                    dateAudit: dateAuditInput,
+                    inspectionStatus: inspectionStatus,
+                    jobStatus: jobStatus,
+                    typeOfWork: typeOfWork,
+                    page: page // Pass the page number
+                },
+                success: function(response) {
+                    // Response should include the filtered table rows and total records
+                    const data = JSON.parse(response);
+
+                    // Update the table with the new data
+                    $('#auditTable').html(data.tableRows);
+
+                    // Update the total record count
+                    updateTotalRecords(data.totalRecords);
+
+                    // Update the pagination buttons
+                    updatePagination(data.totalRecords, page);
+                }
+            });
         }
 
-        function filterByInspectionStatus() {
-            searchTable();
+        // Function to update the total records display
+        function updateTotalRecords(totalRecords) {
+            document.getElementById('totalRecords').innerText = "Total matching records: " + totalRecords;
         }
 
-        function filterByJobStatus() {
-            searchTable();
+        // Function to update pagination buttons
+        function updatePagination(totalRecords, currentPage) {
+            const totalPages = Math.ceil(totalRecords / 10); // Assuming 10 records per page
+
+            let paginationHtml = '';
+
+            if (currentPage > 1) {
+                paginationHtml += `<li><a href="#" onclick="loadPage(${currentPage - 1})" class="px-4 py-2 bg-blue-500 text-white rounded-l">Prev</a></li>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHtml += `<li><a href="#" onclick="loadPage(${i})" class="px-4 py-2 border ${i === currentPage ? 'bg-blue-500 text-white' : ''}">${i}</a></li>`;
+            }
+
+            if (currentPage < totalPages) {
+                paginationHtml += `<li><a href="#" onclick="loadPage(${currentPage + 1})" class="px-4 py-2 bg-blue-500 text-white rounded-r">Next</a></li>`;
+            }
+
+            document.getElementById('pagination').innerHTML = paginationHtml;
         }
 
-        function filterByTypeOfWork() {
-            searchTable();
+        // Function to handle page change
+        function loadPage(page) {
+            searchTable(page); // Fetch data for the new page
         }
 
-        function filterByDateAudit() {
-            searchTable();
-        }
+
+
+
+        // Trigger searchTable function on keyup of the search input
+        $(document).ready(function() {
+            $('#searchInput').on('keyup', function() {
+                searchTable();
+            });
+
+            $('#dateAuditInput').on('change', function() {
+                searchTable();
+            });
+
+            $('#inspectionStatus').on('change', function() {
+                searchTable();
+            });
+
+            $('#jobStatus').on('change', function() {
+                searchTable();
+            });
+
+            $('#typeOfWork').on('keyup', function() {
+                searchTable();
+            });
+        });
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            // Get the current filter values
+            const searchInput = document.getElementById('searchInput').value;
+            const dateAuditInput = document.getElementById('dateAuditInput').value;
+            const inspectionStatus = document.getElementById('inspectionStatus').value;
+            const jobStatus = document.getElementById('jobStatus').value;
+            const typeOfWork = document.getElementById('typeOfWork').value;
+
+            // Set the hidden input values in the export form
+            document.querySelector('input[name="search"]').value = searchInput;
+            document.querySelector('input[name="dateAudit"]').value = dateAuditInput;
+            document.querySelector('input[name="inspectionStatus"]').value = inspectionStatus;
+            document.querySelector('input[name="jobStatus"]').value = jobStatus;
+            document.querySelector('input[name="typeOfWork"]').value = typeOfWork;
+
+            // Show the modal
+            document.getElementById('exportModal').classList.remove('hidden');
+        });
     </script>
 </head>
 
@@ -143,7 +228,7 @@ $conn->close();
                 class="px-4 py-2 border border-gray-300 rounded-md w-1/4" placeholder="Search by Type of Work"
                 value="<?= htmlspecialchars($typeOfWorkFilter) ?>" />
 
-                <input type="date" id="dateAuditInput" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByDateAudit()" />
+            <input type="date" id="dateAuditInput" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>" class="px-4 py-2 border border-gray-300 rounded-md w-1/4" onchange="filterByDateAudit()" />
 
             <select id="inspectionStatus" class="px-4 py-2 border border-gray-300 rounded-md w-1/4"
                 onchange="filterByInspectionStatus()">
@@ -171,12 +256,12 @@ $conn->close();
             <div class="bg-white p-6 rounded-lg w-1/3 grid gap-4 max-h-[80vh] overflow-y-auto">
                 <h2 class="text-2xl mb-4">Select Columns to Export</h2>
                 <form id="exportForm" method="POST" action="export.php" class="grid gap-4">
-    <!-- Hidden inputs to pass filters -->
-    <input type="hidden" name="search" value="<?= htmlspecialchars($searchTerm) ?>">
-    <input type="hidden" name="inspectionStatus" value="<?= htmlspecialchars($inspectionStatusFilter) ?>">
-    <input type="hidden" name="jobStatus" value="<?= htmlspecialchars($jobStatusFilter) ?>">
-    <input type="hidden" name="typeOfWork" value="<?= htmlspecialchars($typeOfWorkFilter) ?>">
-    <input type="hidden" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>">
+                    <!-- Hidden inputs to pass filters -->
+                    <input type="hidden" name="search" value="<?= htmlspecialchars($searchTerm) ?>">
+                    <input type="hidden" name="inspectionStatus" value="<?= htmlspecialchars($inspectionStatusFilter) ?>">
+                    <input type="hidden" name="jobStatus" value="<?= htmlspecialchars($jobStatusFilter) ?>">
+                    <input type="hidden" name="typeOfWork" value="<?= htmlspecialchars($typeOfWorkFilter) ?>">
+                    <input type="hidden" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>">
                     <div class="mb-4">
                         <label>
                             <input type="checkbox" name="columns[]" value="date_audited" checked> Date Audit
@@ -419,6 +504,7 @@ $conn->close();
             </div>
         </div>
         <br> <!-- Table with Scroll -->
+
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
                 <thead class="bg-gray-200">
@@ -465,7 +551,7 @@ $conn->close();
 
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="auditTable">
                     <?php foreach ($records as $row): ?>
                         <tr>
                             <td class="py-2 px-6"><?= htmlspecialchars($row['date_audited']) ?></td>
@@ -524,23 +610,20 @@ $conn->close();
 
         <!-- Display total matching records -->
         <div class="mt-4 text-center">
-            <p class="text-gray-600">Total matching records: <?= $total_rows ?></p>
+            <p class="text-gray-600" id="totalRecords">Total matching records: <?= $total_rows ?></p>
         </div>
 
         <!-- Pagination -->
         <div class="mt-4 text-center">
-            <ul class="inline-flex items-center">
+            <ul class="inline-flex items-center" id="pagination">
                 <?php if ($page > 1): ?>
-                    <li><a href="?page=<?= $page - 1 ?>&search=<?= urlencode($searchTerm) ?>&inspectionStatus=<?= urlencode($inspectionStatusFilter) ?>&jobStatus=<?= urlencode($jobStatusFilter) ?>&typeOfWork=<?= urlencode($typeOfWorkFilter) ?>"
-                            class="px-4 py-2 bg-blue-500 text-white rounded-l">Prev</a></li>
+                    <li><a href="#" onclick="loadPage(<?= $page - 1 ?>)" class="px-4 py-2 bg-blue-500 text-white rounded-l">Prev</a></li>
                 <?php endif; ?>
                 <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                    <li><a href="?page=<?= $i ?>&search=<?= urlencode($searchTerm) ?>&inspectionStatus=<?= urlencode($inspectionStatusFilter) ?>&jobStatus=<?= urlencode($jobStatusFilter) ?>&typeOfWork=<?= urlencode($typeOfWorkFilter) ?>"
-                            class="px-4 py-2 border"><?= $i ?></a></li>
+                    <li><a href="#" onclick="loadPage(<?= $i ?>)" class="px-4 py-2 border"><?= $i ?></a></li>
                 <?php endfor; ?>
                 <?php if ($page < $total_pages): ?>
-                    <li><a href="?page=<?= $page + 1 ?>&search=<?= urlencode($searchTerm) ?>&inspectionStatus=<?= urlencode($inspectionStatusFilter) ?>&jobStatus=<?= urlencode($jobStatusFilter) ?>&typeOfWork=<?= urlencode($typeOfWorkFilter) ?>"
-                            class="px-4 py-2 bg-blue-500 text-white rounded-r">Next</a></li>
+                    <li><a href="#" onclick="loadPage(<?= $page + 1 ?>)" class="px-4 py-2 bg-blue-500 text-white rounded-r">Next</a></li>
                 <?php endif; ?>
             </ul>
         </div>

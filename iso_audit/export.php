@@ -1,93 +1,74 @@
 <?php
-require '../vendor/autoload.php'; // Include PhpSpreadsheet
+require_once '../db_conn.php';
 
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+// Retrieve filter values from POST request
+$searchTerm = isset($_POST['search']) ? $_POST['search'] : '';
+$inspectionStatusFilter = isset($_POST['inspectionStatus']) ? $_POST['inspectionStatus'] : '';
+$jobStatusFilter = isset($_POST['jobStatus']) ? $_POST['jobStatus'] : '';
+$typeOfWorkFilter = isset($_POST['typeOfWork']) ? $_POST['typeOfWork'] : '';
+$dateAuditFilter = isset($_POST['dateAudit']) ? $_POST['dateAudit'] : '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['columns'])) {
-    // Get selected columns from the form
-    $selectedColumns = $_POST['columns'];
+// Retrieve selected columns from POST request
+$selectedColumns = isset($_POST['columns']) ? $_POST['columns'] : [];
 
-    // Include database connection
-    include_once '../db_conn.php';
+// Create a base SQL query with conditions based on the search filters
+$sql = "SELECT * FROM iso_audit_details WHERE 1=1";
 
-    // Build SQL query based on selected columns
-    $columns = implode(', ', $selectedColumns);
-    $sql = "SELECT $columns FROM iso_audit_details WHERE 1=1"; // Always start with WHERE 1=1 to make appending conditions easier
-
-    // Apply filters based on POST parameters from view.php
-    if (isset($_POST['search']) && $_POST['search'] !== '') {
-        $searchTerm = $_POST['search'];
-        $sql .= " AND (DTJobNumber LIKE '%$searchTerm%' OR TypeOfWork LIKE '%$searchTerm%' OR inspection_status LIKE '%$searchTerm%' OR jobs_status LIKE '%$searchTerm%')";
-    }
-
-    if (isset($_POST['inspectionStatus']) && $_POST['inspectionStatus'] !== '') {
-        $inspectionStatusFilter = $_POST['inspectionStatus'];
-        $sql .= " AND inspection_status LIKE '%$inspectionStatusFilter%'";
-    }
-
-    if (isset($_POST['jobStatus']) && $_POST['jobStatus'] !== '') {
-        $jobStatusFilter = $_POST['jobStatus'];
-        $sql .= " AND jobs_status LIKE '%$jobStatusFilter%'";
-    }
-
-    if (isset($_POST['typeOfWork']) && $_POST['typeOfWork'] !== '') {
-        $typeOfWorkFilter = $_POST['typeOfWork'];
-        $sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
-    }
-
-    if (isset($_POST['dateAudit']) && $_POST['dateAudit'] !== '') {
-        $dateAuditFilter = $_POST['dateAudit'];
-        $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
-    }
-
-    // Execute the query
-    $conn = new mysqli($host, $user, $pass, $db);
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-    $result = $conn->query($sql);
-    $records = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $records[] = $row;
-        }
-    }
-
-    // Create a new spreadsheet
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-
-    // Set headers
-    $columnIndex = 1;
-    foreach ($selectedColumns as $column) {
-        // Set headers for the columns
-        $columnLetter = PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
-        $sheet->setCellValue("{$columnLetter}1", ucfirst(str_replace('_', ' ', $column)));
-        $columnIndex++;
-    }
-
-    // Write data to the spreadsheet
-    $rowIndex = 2;
-    foreach ($records as $record) {
-        $columnIndex = 1;
-        foreach ($selectedColumns as $column) {
-            $columnLetter = PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
-            $sheet->setCellValue("{$columnLetter}{$rowIndex}", $record[$column]);
-            $columnIndex++;
-        }
-        $rowIndex++;
-    }
-
-    // Generate the Excel file and send it to the browser
-    $writer = new Xlsx($spreadsheet);
-    $filename = 'iso_audit_details_filtered.xlsx'; // Add 'filtered' to indicate that it's a filtered export
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $filename . '"');
-    header('Cache-Control: max-age=0');
-
-    $writer->save('php://output');
-    exit;
+// Apply search filters (same filters as in your table query)
+if ($searchTerm) {
+    $sql .= " AND (DTJobNumber LIKE '%$searchTerm%' OR TypeOfWork LIKE '%$searchTerm%' OR inspection_status LIKE '%$searchTerm%' OR jobs_status LIKE '%$searchTerm%')";
 }
+
+if ($inspectionStatusFilter) {
+    $sql .= " AND inspection_status LIKE '%$inspectionStatusFilter%'";
+}
+
+if ($jobStatusFilter) {
+    $sql .= " AND jobs_status LIKE '%$jobStatusFilter%'";
+}
+
+if ($typeOfWorkFilter) {
+    $sql .= " AND TypeOfWork LIKE '%$typeOfWorkFilter%'";
+}
+
+if ($dateAuditFilter) {
+    $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
+}
+
+// Execute the query
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+$result = $conn->query($sql);
+
+$records = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $records[] = $row;
+    }
+}
+
+$conn->close();
+
+// Generate Excel file
+header('Content-Type: application/vnd.ms-excel');
+header('Content-Disposition: attachment; filename="iso_audit_details.xls"');
+
+echo "<table border='1'>";
+echo "<tr>";
+foreach ($selectedColumns as $column) {
+    echo "<th>" . ucfirst(str_replace('_', ' ', $column)) . "</th>";
+}
+echo "</tr>";
+
+foreach ($records as $row) {
+    echo "<tr>";
+    foreach ($selectedColumns as $column) {
+        echo "<td>" . htmlspecialchars($row[$column]) . "</td>";
+    }
+    echo "</tr>";
+}
+echo "</table>";
+
 ?>
