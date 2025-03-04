@@ -8,6 +8,8 @@ $inspectionStatusFilter = isset($_GET['inspectionStatus']) ? $_GET['inspectionSt
 $jobStatusFilter = isset($_GET['jobStatus']) ? $_GET['jobStatus'] : '';
 $typeOfWorkFilter = isset($_GET['typeOfWork']) ? $_GET['typeOfWork'] : '';
 $dateAuditFilter = isset($_GET['dateAudit']) ? $_GET['dateAudit'] : '';
+$ncrRaisedFilter = isset($_GET['ncrRaised']) ? $_GET['ncrRaised'] : ''; // New NCR Raised filter
+
 
 // Pagination: Show 10 records per page
 $limit = 10;
@@ -37,6 +39,12 @@ if ($typeOfWorkFilter) {
 if ($dateAuditFilter) {
     $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
 }
+
+// Apply new filters for NCR Raised and NCR Specify
+if ($ncrRaisedFilter) {
+    $sql .= " AND ncr_raised LIKE '%$ncrRaisedFilter%'";
+}
+
 
 // Apply pagination to the SQL query
 $sql .= " LIMIT $start, $limit";
@@ -78,6 +86,13 @@ if ($typeOfWorkFilter) {
 if ($dateAuditFilter) {
     $total_sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
 }
+
+// Apply new filters for NCR Raised and NCR Specify to the total query
+if ($ncrRaisedFilter) {
+    $total_sql .= " AND ncr_raised LIKE '%$ncrRaisedFilter%'";
+}
+
+
 
 // Execute the query for total rows
 $total_result = $conn->query($total_sql);

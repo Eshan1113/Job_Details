@@ -8,6 +8,8 @@ $inspectionStatusFilter = isset($_GET['inspectionStatus']) ? $_GET['inspectionSt
 $jobStatusFilter = isset($_GET['jobStatus']) ? $_GET['jobStatus'] : '';
 $typeOfWorkFilter = isset($_GET['typeOfWork']) ? $_GET['typeOfWork'] : '';
 $dateAuditFilter = isset($_GET['dateAudit']) ? $_GET['dateAudit'] : '';
+$ncrRaisedFilter = isset($_GET['ncrRaised']) ? $_GET['ncrRaised'] : ''; // New NCR Raised filter
+
 
 // Pagination: Show 10 records per page
 $limit = 10;
@@ -37,6 +39,13 @@ if ($typeOfWorkFilter) {
 if ($dateAuditFilter) {
     $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
 }
+
+// Apply new filters for NCR Raised and NCR Specify
+if ($ncrRaisedFilter) {
+    $sql .= " AND ncr_raised LIKE '%$ncrRaisedFilter%'";
+}
+
+
 
 // Apply pagination to the SQL query
 $sql .= " LIMIT $start, $limit";
@@ -79,6 +88,13 @@ if ($dateAuditFilter) {
     $total_sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
 }
 
+// Apply new filters for NCR Raised and NCR Specify to the total query
+if ($ncrRaisedFilter) {
+    $total_sql .= " AND ncr_raised LIKE '%$ncrRaisedFilter%'";
+}
+
+
+
 // Execute the query for total rows
 $total_result = $conn->query($total_sql);
 $total_rows = $total_result->fetch_array()[0];
@@ -89,7 +105,6 @@ $total_pages = ceil($total_rows / $limit);
 $conn->close();
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -97,8 +112,14 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISO Audit Details</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="../css/tailwind.min.css" rel="stylesheet">
+    <link href="../css/all.min.css" rel="stylesheet">
+    <link href="../css/all.min.css" rel="stylesheet">
+    <link href="../font/all.min.css" rel="stylesheet">
+    <link href="../css/select2.min.css" rel="stylesheet" />
+    <script src="../css/jquery-3.6.0.min.js"></script>
+    <script src="../css/select2.min.js"></script>
+    
     <script>
         // Function for real-time search across all columns
         function searchTable(page = 1) {
@@ -107,6 +128,8 @@ $conn->close();
             const inspectionStatus = document.getElementById('inspectionStatus').value;
             const jobStatus = document.getElementById('jobStatus').value;
             const typeOfWork = document.getElementById('typeOfWork').value;
+            const ncrRaised = document.getElementById('ncrRaised').value; // New NCR Raised filter
+         
 
             // Send the AJAX request to the server
             $.ajax({
@@ -118,6 +141,8 @@ $conn->close();
                     inspectionStatus: inspectionStatus,
                     jobStatus: jobStatus,
                     typeOfWork: typeOfWork,
+                    ncrRaised: ncrRaised, // Pass NCR Raised filter
+                  
                     page: page // Pass the page number
                 },
                 success: function(response) {
@@ -167,9 +192,6 @@ $conn->close();
             searchTable(page); // Fetch data for the new page
         }
 
-
-
-
         // Trigger searchTable function on keyup of the search input
         $(document).ready(function() {
             $('#searchInput').on('keyup', function() {
@@ -191,7 +213,17 @@ $conn->close();
             $('#typeOfWork').on('keyup', function() {
                 searchTable();
             });
+
+            $('#ncrRaised').on('keyup', function() {
+                searchTable();
+            });
+
+            $('#ncrSpecify').on('keyup', function() {
+                searchTable();
+            });
         });
+
+        // Show the export modal when the button is clicked
         document.getElementById('exportBtn').addEventListener('click', function() {
             // Get the current filter values
             const searchInput = document.getElementById('searchInput').value;
@@ -199,6 +231,8 @@ $conn->close();
             const inspectionStatus = document.getElementById('inspectionStatus').value;
             const jobStatus = document.getElementById('jobStatus').value;
             const typeOfWork = document.getElementById('typeOfWork').value;
+            const ncrRaised = document.getElementById('ncrRaised').value; // New NCR Raised filter
+           
 
             // Set the hidden input values in the export form
             document.querySelector('input[name="search"]').value = searchInput;
@@ -206,12 +240,20 @@ $conn->close();
             document.querySelector('input[name="inspectionStatus"]').value = inspectionStatus;
             document.querySelector('input[name="jobStatus"]').value = jobStatus;
             document.querySelector('input[name="typeOfWork"]').value = typeOfWork;
+            document.querySelector('input[name="ncrRaised"]').value = ncrRaised; // New NCR Raised filter
+      
 
             // Show the modal
             document.getElementById('exportModal').classList.remove('hidden');
         });
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
     </script>
 </head>
+
 
 <body class="bg-gray-100">
 
@@ -244,6 +286,12 @@ $conn->close();
                 <option value="new" <?= ($jobStatusFilter == 'new') ? 'selected' : '' ?>>New</option>
                 <option value="repair" <?= ($jobStatusFilter == 'repair') ? 'selected' : '' ?>>Repair</option>
             </select>
+                 <!-- New Search Bars for NCR Raised and NCR Specify -->
+                 <input type="text" id="ncrRaised" onkeyup="searchTable()"
+                class="px-4 py-2 border border-gray-300 rounded-md w-1/4"
+                placeholder="Search by NCR Raised" value="<?= htmlspecialchars($ncrRaisedFilter) ?>" />
+
+           
         </div>
 
         <!-- Export to Excel Button -->
@@ -251,258 +299,216 @@ $conn->close();
         <br>
         <!-- Modal for column selection -->
         <!-- Modal for column selection -->
-        <div id="exportModal"
-            class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-lg w-1/3 grid gap-4 max-h-[80vh] overflow-y-auto">
-                <h2 class="text-2xl mb-4">Select Columns to Export</h2>
-                <form id="exportForm" method="POST" action="export.php" class="grid gap-4">
-                    <!-- Hidden inputs to pass filters -->
-                    <input type="hidden" name="search" value="<?= htmlspecialchars($searchTerm) ?>">
-                    <input type="hidden" name="inspectionStatus" value="<?= htmlspecialchars($inspectionStatusFilter) ?>">
-                    <input type="hidden" name="jobStatus" value="<?= htmlspecialchars($jobStatusFilter) ?>">
-                    <input type="hidden" name="typeOfWork" value="<?= htmlspecialchars($typeOfWorkFilter) ?>">
-                    <input type="hidden" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>">
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="date_audited" checked> Date Audit
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="DTJobNumber" checked> Job Number
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="TypeOfWork" checked> Type of Work
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="overall_satisfaction" checked> Overall
-                            Satisfaction
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="inspection_status" checked> Inspection Status
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="jobs_status" checked> Job Status
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="auditor_name" checked> Auditor Name
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="job_order_issued_by_fm" checked> Job Order
-                            Issued by FM
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="master_job_files_avail" checked> Master Job
-                            Files Available
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="spec_sheets_and_all_fabr_drawings" checked>
-                            Spec Sheets and All Drawings
-                        </label>
-                    </div>
+       <!-- Modal for column selection -->
+<div id="exportModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg w-1/3 grid gap-4 max-h-[80vh] overflow-y-auto">
+        <h2 class="text-2xl mb-4">Select Columns to Export</h2>
+        <form id="exportForm" method="POST" action="export.php" class="grid gap-4">
+            <!-- Hidden inputs to pass filters -->
+            <input type="hidden" name="search" value="<?= htmlspecialchars($searchTerm) ?>">
+            <input type="hidden" name="inspectionStatus" value="<?= htmlspecialchars($inspectionStatusFilter) ?>">
+            <input type="hidden" name="jobStatus" value="<?= htmlspecialchars($jobStatusFilter) ?>">
+            <input type="hidden" name="typeOfWork" value="<?= htmlspecialchars($typeOfWorkFilter) ?>">
+            <input type="hidden" name="dateAudit" value="<?= htmlspecialchars($dateAuditFilter) ?>">
+            <input type="hidden" name="ncrRaised" value="<?= htmlspecialchars($ncrRaisedFilter) ?>">
 
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="complete_set_of_qa_forms" checked> QA Forms
-                            Complete
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="physical_pro_percent" checked> Physical Pro
-                            Percent
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="qa_pro_percent" checked> QA Pro Percent
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="tank_joining_report" checked> Tank Joining
-                            Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="manhole_test_report" checked> Manhole Test
-                            Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="tank_test_report" checked> Tank Test Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="valve_body_test_report" checked> Valve Body
-                            Test Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="valve_test_report" checked> Valve Test Report
-                        </label>
-                    </div>
-
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="letter_to_chassis_manufacturer" checked>
-                            Letter to Chassis Manufacturer
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="fire_extinguisher_report" checked> Fire
-                            Extinguisher Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="axel_alignment_test_report" checked> Axel
-                            Alignment Test Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="pressure_test_report" checked> Pressure Test
-                            Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="aeration_test_report" checked> Aeration Test
-                            Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="calibration_chart" checked> Calibration Chart
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="final_check_list_inspection_report" checked>
-                            Final Check List Inspection Report
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="labour_hours_sheet" checked> Labour Hours
-                            Sheet
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="all_inspection_reports_signed" checked> All
-                            Inspection Reports Signed
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="critical_doc_signed" checked> Critical Docs
-                            Signed
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="delivery_details_attach" checked> Delivery
-                            Details Attached
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="customer_feedback_attach" checked> Customer
-                            Feedback Attached
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="service_at_cost" checked> Service at Cost
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="all_reports_signed" checked> All Reports
-                            Signed
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="ncr_raised" checked> NCR Raised
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="ncr_specify" checked> NCR Specify
-                        </label>
-                    </div>
-
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="auditor_comments" checked> Auditor Comments
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="extra_works_attached" checked> Extra Works
-                            Attached
-                        </label>
-                    </div>
-
-                    <div class="mb-4">
-                        <label>
-                            <input type="checkbox" name="columns[]" value="if_no_specify" checked> If No, Specify
-                        </label>
-                    </div>
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Download</button>
-                </form>
-                <button onclick="closeModal()" class="px-4 py-2 bg-red-500 text-white rounded-md mt-4">Close</button>
+            <!-- Grid layout for checkboxes -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="date_audited" checked> Date Audit
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="DTJobNumber" checked> Job Number
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="TypeOfWork" checked> Type of Work
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="overall_satisfaction" checked> Overall Satisfaction
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="inspection_status" checked> Inspection Status
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="jobs_status" checked> Job Status
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="auditor_name" checked> Auditor Name
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="job_order_issued_by_fm" checked> Job Order Issued by FM
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="master_job_files_avail" checked> Master Job Files Available
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="spec_sheets_and_all_fabr_drawings" checked> Spec Sheets and All Drawings
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="complete_set_of_qa_forms" checked> QA Forms Complete
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="physical_pro_percent" checked> Physical Pro Percent
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="qa_pro_percent" checked> QA Pro Percent
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="tank_joining_report" checked> Tank Joining Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="manhole_test_report" checked> Manhole Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="tank_test_report" checked> Tank Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="valve_body_test_report" checked> Valve Body Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="valve_test_report" checked> Valve Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="letter_to_chassis_manufacturer" checked> Letter to Chassis Manufacturer
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="fire_extinguisher_report" checked> Fire Extinguisher Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="axel_alignment_test_report" checked> Axel Alignment Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="pressure_test_report" checked> Pressure Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="aeration_test_report" checked> Aeration Test Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="calibration_chart" checked> Calibration Chart
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="final_check_list_inspection_report" checked> Final Check List Inspection Report
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="labour_hours_sheet" checked> Labour Hours Sheet
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="all_inspection_reports_signed" checked> All Inspection Reports Signed
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="critical_doc_signed" checked> Critical Docs Signed
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="delivery_details_attach" checked> Delivery Details Attached
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="customer_feedback_attach" checked> Customer Feedback Attached
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="service_at_cost" checked> Service at Cost
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="all_reports_signed" checked> All Reports Signed
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="ncr_raised" checked> NCR Raised
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="ncr_specify" checked> NCR Specify
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="auditor_comments" checked> Auditor Comments
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="extra_works_attached" checked> Extra Works Attached
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="columns[]" value="if_no_specify" checked> If No, Specify
+                    </label>
+                </div>
             </div>
-        </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Download</button>
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-red-500 text-white rounded-md">Close</button>
+            </div>
+        </form>
+    </div>
+</div>
         <br> <!-- Table with Scroll -->
 
         <div class="overflow-x-auto">
@@ -629,6 +635,26 @@ $conn->close();
         </div>
     </div>
     <script>
+        document.getElementById('exportBtn').addEventListener('click', function() {
+    // Get the current filter values
+    const searchInput = document.getElementById('searchInput').value;
+    const dateAuditInput = document.getElementById('dateAuditInput').value;
+    const inspectionStatus = document.getElementById('inspectionStatus').value;
+    const jobStatus = document.getElementById('jobStatus').value;
+    const typeOfWork = document.getElementById('typeOfWork').value;
+    const ncrRaised = document.getElementById('ncrRaised').value;
+
+    // Set the hidden input values in the export form
+    document.querySelector('input[name="search"]').value = searchInput;
+    document.querySelector('input[name="dateAudit"]').value = dateAuditInput;
+    document.querySelector('input[name="inspectionStatus"]').value = inspectionStatus;
+    document.querySelector('input[name="jobStatus"]').value = jobStatus;
+    document.querySelector('input[name="typeOfWork"]').value = typeOfWork;
+    document.querySelector('input[name="ncrRaised"]').value = ncrRaised;
+
+    // Show the modal
+    document.getElementById('exportModal').classList.remove('hidden');
+});
         // Show the export modal when the button is clicked
         document.getElementById('exportBtn').addEventListener('click', function() {
             document.getElementById('exportModal').classList.remove('hidden');

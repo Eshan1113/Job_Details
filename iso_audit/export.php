@@ -7,6 +7,7 @@ $inspectionStatusFilter = isset($_POST['inspectionStatus']) ? $_POST['inspection
 $jobStatusFilter = isset($_POST['jobStatus']) ? $_POST['jobStatus'] : '';
 $typeOfWorkFilter = isset($_POST['typeOfWork']) ? $_POST['typeOfWork'] : '';
 $dateAuditFilter = isset($_POST['dateAudit']) ? $_POST['dateAudit'] : '';
+$ncrRaisedFilter = isset($_POST['ncrRaised']) ? $_POST['ncrRaised'] : ''; // New NCR Raised filter
 
 // Retrieve selected columns from POST request
 $selectedColumns = isset($_POST['columns']) ? $_POST['columns'] : [];
@@ -33,6 +34,10 @@ if ($typeOfWorkFilter) {
 
 if ($dateAuditFilter) {
     $sql .= " AND date_audited LIKE '%$dateAuditFilter%'";
+}
+
+if ($ncrRaisedFilter) {
+    $sql .= " AND ncr_raised LIKE '%$ncrRaisedFilter%'";
 }
 
 // Execute the query
@@ -70,5 +75,4 @@ foreach ($records as $row) {
     echo "</tr>";
 }
 echo "</table>";
-
 ?>
